@@ -116,3 +116,52 @@ cd ml-service
 .venv\Scripts\python.exe main.py
 ```
 The forecaster will start running at `http://127.0.0.1:8000`. You can query the POST endpoint `/predict` with SKU sales histories to generate live LightGBM models.
+
+---
+
+## 5. Decoupled Cloud Deployment (Render + Neon.tech)
+
+If you are hosting the production or staging instances on Render and Neon:
+
+### Step A: Setup Neon PostgreSQL Database
+1. Create a free PostgreSQL database cluster on [Neon.tech](https://neon.tech).
+2. Copy the Connection String (URI format).
+3. Select your Laravel app environment variables and update:
+   ```text
+   DB_CONNECTION=pgsql
+   DB_HOST=ep-example-1234.us-east-2.aws.neon.tech
+   DB_PORT=5432
+   DB_DATABASE=neondb
+   DB_USERNAME=your_username
+   DB_PASSWORD=your_password
+   # Ensure SSL mode is enabled (required by Neon)
+   DB_SSLMODE=require
+   ```
+*(Note: Since free Neon database clusters do not have the TimescaleDB extension enabled, the migrations will automatically log a warning and fall back to standard PostgreSQL relational tables without crashing).*
+
+### Step B: Deploy FastAPI Predictor to Render
+1. Create a new **Web Service** on [Render](https://render.com) connected to your GitHub repository.
+2. Set the **Root Directory** to `ml-service`.
+3. Set the **Runtime** to `Python 3`.
+4. Set the **Build Command** to:
+   ```bash
+   pip install -r requirements.txt
+   ```
+5. Set the **Start Command** to:
+   ```bash
+   uvicorn main:app --host 0.0.0.0 --port $PORT
+   ```
+6. Render will assign a public URL, e.g., `https://stocksense-ml.onrender.com`.
+
+### Step C: Deploy Laravel SaaS to Render
+1. Create another **Web Service on Render** for the root folder of the project.
+2. Select the **PHP** or **Docker** runtime.
+3. Configure the environment variables to point to your Neon Database host.
+4. Set the `FORECAST_SERVICE_URL` variable to point to your Render FastAPI URL:
+   ```text
+   FORECAST_SERVICE_URL=https://stocksense-ml.onrender.com
+   ```
+5. Run remote console migrations:
+   ```bash
+   php artisan migrate --force
+   ```

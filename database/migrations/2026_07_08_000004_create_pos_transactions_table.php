@@ -34,12 +34,17 @@ return new class extends Migration
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
 
-        // TimescaleDB hypertable setup (conditional on PostgreSQL driver)
+        // TimescaleDB hypertable setup (conditional on PostgreSQL driver with fallback safety)
         if (DB::getDriverName() === 'pgsql') {
-            DB::statement('CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;');
-            
-            // Convert standard table into a TimescaleDB hypertable partitioned by transaction_date
-            DB::statement("SELECT create_hypertable('pos_transactions', 'transaction_date', if_not_exists => TRUE);");
+            try {
+                DB::statement('CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;');
+                
+                // Convert standard table into a TimescaleDB hypertable partitioned by transaction_date
+                DB::statement("SELECT create_hypertable('pos_transactions', 'transaction_date', if_not_exists => TRUE);");
+            } catch (\Exception $e) {
+                // Suppress failure and fallback to normal Postgres tables if extension is missing (e.g. on Neon)
+                \Illuminate\Support\Facades\Log::warning('TimescaleDB extension not available or hypertable creation failed. Falling back to standard PostgreSQL table. Error: ' . $e->getMessage());
+            }
         }
     }
 
