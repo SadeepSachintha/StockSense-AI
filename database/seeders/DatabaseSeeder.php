@@ -38,8 +38,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'orders@agribulk.com'],
             [
                 'name' => 'AgriBulk Corp',
-                'phone' => '+15550199',
-                'lead_time_days' => 5
+                'phone' => '+15550199'
             ]
         );
 
