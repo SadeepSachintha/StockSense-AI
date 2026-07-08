@@ -30,5 +30,5 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 80
 
-# Automatically run database migrations on boot before starting Apache web server
-CMD ["sh", "-c", "php artisan migrate --force && apache2-foreground"]
+# Automatically run database migrations & seeding on boot before starting Apache web server
+CMD ["sh", "-c", "php artisan migrate --force && (php artisan db:seed --force || true) && apache2-foreground"]
