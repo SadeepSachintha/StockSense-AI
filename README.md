@@ -165,3 +165,15 @@ If you are hosting the production or staging instances on Render and Neon:
    ```bash
    php artisan migrate --force
    ```
+
+---
+
+## 6. Live Production Dashboard Integration
+
+In the production cloud instance, the default Laravel welcome screen has been replaced with the **Live StockSense AI SaaS Dashboard**:
+* **Live Server Access:** Visiting `https://stocksense-ai-0g8t.onrender.com/?tenant_id=tenant_001` will display the interactive dashboard.
+* **Automatic Database Seeding:** The container automatically migrates and runs seeds idempotently on boot to populate a mock tenant (`tenant_001`), supplier, and demo products with 30 days of sales history.
+* **Live Cloud Interactivity:**
+  * `GET /api/products` retrieves stock levels directly from the Neon database.
+  * `GET /api/products/{id}/forecast` dispatches live inputs to the FastAPI regressor to map forecasting matrices and recalculate safety margins.
+  * **POS Ingestion Simulation:** Clicking the CSV uploader fires a live POST query to `/api/products/ingest`, writing sales transactions to PostgreSQL in real-time and raising stockout alerts if safety thresholds are violated.
