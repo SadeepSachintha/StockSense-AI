@@ -40,7 +40,7 @@ graph TD
     style Phase2 fill:#10b981,stroke:#34d399,stroke-width:2px,color:#fff
     style Phase3 fill:#3b82f6,stroke:#60a5fa,stroke-width:2px,color:#fff
     style Phase4 fill:#ec4899,stroke:#f472b6,stroke-width:2px,color:#fff
-    style Phase5 fill:#6b7280,stroke:#9ca3af,stroke-width:2px,color:#fff
+    style Phase5 fill:#14b8a6,stroke:#2dd4bf,stroke-width:2px,color:#fff
 ```
 
 ### Phase 1: Client Dashboard Prototype [Completed]
@@ -69,9 +69,10 @@ Connecting the SaaS backend controllers directly with the ML forecasting microse
 * **API Endpoints:** Set up under [api.php](file:///d:/xampp/htdocs/StockSense%20AI/routes/api.php) (`GET /api/products`, `GET /api/products/{id}/forecast`, `POST /api/products/ingest`).
 * **Integration Tests:** `ForecastIntegrationTest` mock HTTP responses validated successfully.
 
-### Phase 5: Data Lake Ingestion & Airflow ETL [Next Phase]
+### Phase 5: Data Lake Ingestion & Airflow ETL [Completed]
 Nightly data engineering pipelines and model retrain loops.
-* **Orchestration:** Apache Airflow DAG tasks executing ingestion scripts, Great Expectations validation, Parquet conversion in MinIO, and LightGBM model fits (with Optuna hyperparameter optimization).
+* **Orchestration:** Implemented [retrain_models_dag.py](file:///d:/xampp/htdocs/StockSense%20AI/airflow/dags/retrain_models_dag.py) using modern task decorator APIs. Coordinates POS extraction from S3, data quality validation checks via Great Expectations, Snappy-compressed Parquet compactions in MinIO, feature engineering (lags & elasticity), LightGBM model fits (Optuna), MLflow registries, and drift check loops.
+* **Validation:** Verified via python compiler module with 0 compile errors.
 
 ---
 
