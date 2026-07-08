@@ -29,3 +29,6 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 80
+
+# Automatically run database migrations on boot before starting Apache web server
+CMD ["sh", "-c", "php artisan migrate --force && apache2-foreground"]
