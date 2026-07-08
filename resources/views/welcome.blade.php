@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>StockSense AI - Predictive Inventory & Demand Forecasting SaaS</title>
-  <link rel="stylesheet" href="{{ asset('style.css') }}">
+  <link rel="stylesheet" href="/style.css">
   <!-- Load Vue 3 and Chart.js from CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -565,6 +565,6 @@
 
   </div>
 
-  <script src="{{ asset('app.js') }}"></script>
+  <script src="/app.js"></script>
 </body>
 </html>
