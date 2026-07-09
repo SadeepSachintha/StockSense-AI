@@ -683,10 +683,58 @@
           </div>
 
           <div>
+            <!-- Discount Option Panel -->
+            <div v-if="cart.length > 0" style="margin-bottom:1rem;padding:0.75rem 1rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:8px;">
+              <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.025em;display:flex;justify-content:space-between;align-items:center;">
+                <span>Cart Discount</span>
+                <span v-if="discountValue > 0" style="color:#fb7185;font-weight:700;">
+                  - $@{{ discountAmount.toFixed(2) }}
+                </span>
+              </div>
+              <div style="display:flex;gap:0.5rem;">
+                <div style="display:flex;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:0.15rem;width:80px;">
+                  <button 
+                    type="button" 
+                    style="flex:1;border:none;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;transition:all 0.15s;padding:0.15rem 0;"
+                    :style="discountType === 'percent' ? 'background:var(--accent-purple);color:#fff;' : 'background:transparent;color:var(--text-secondary);'"
+                    @click="discountType = 'percent'"
+                  >
+                    %
+                  </button>
+                  <button 
+                    type="button" 
+                    style="flex:1;border:none;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;transition:all 0.15s;padding:0.15rem 0;"
+                    :style="discountType === 'value' ? 'background:var(--accent-purple);color:#fff;' : 'background:transparent;color:var(--text-secondary);'"
+                    @click="discountType = 'value'"
+                  >
+                    $
+                  </button>
+                </div>
+                <div style="position:relative;flex:1;">
+                  <input 
+                    type="number" 
+                    class="admin-input" 
+                    style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%;box-sizing:border-box;"
+                    min="0"
+                    :max="discountType === 'percent' ? 100 : cartSubtotal"
+                    placeholder="Discount value..."
+                    v-model.number="discountValue"
+                  >
+                  <span style="position:absolute;right:0.6rem;top:50%;transform:translateY(-50%);font-size:0.75rem;color:var(--text-muted);pointer-events:none;">
+                    @{{ discountType === 'percent' ? '%' : '$' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <div class="cart-totals-section">
               <div style="display:flex;justify-content:space-between;">
                 <span style="color:var(--text-secondary);">Subtotal:</span>
                 <strong>$@{{ cartSubtotal.toFixed(2) }}</strong>
+              </div>
+              <div v-if="discountValue > 0" style="display:flex;justify-content:space-between;color:#fb7185;">
+                <span>Discount (@{{ discountType === 'percent' ? discountValue + '%' : '$' + discountValue }}):</span>
+                <strong>- $@{{ discountAmount.toFixed(2) }}</strong>
               </div>
               <div style="display:flex;justify-content:space-between;">
                 <span style="color:var(--text-secondary);">Sales Tax (8%):</span>
@@ -898,6 +946,10 @@
             <span>Subtotal:</span>
             <span style="color:var(--text-primary);">$@{{ receiptData.subtotal.toFixed(2) }}</span>
           </div>
+          <div v-if="receiptData.discount > 0" style="display:flex;justify-content:space-between;color:#fb7185;">
+            <span>Discount Applied:</span>
+            <strong>- $@{{ receiptData.discount.toFixed(2) }}</strong>
+          </div>
           <div style="display:flex;justify-content:space-between;">
             <span>Sales Tax (8%):</span>
             <span style="color:var(--text-primary);">$@{{ receiptData.tax.toFixed(2) }}</span>
@@ -943,6 +995,10 @@
       <div style="display:flex;justify-content:space-between;">
         <span>SUBTOTAL</span>
         <span>$@{{ receiptData.subtotal.toFixed(2) }}</span>
+      </div>
+      <div v-if="receiptData.discount > 0" style="display:flex;justify-content:space-between;">
+        <span>DISCOUNT</span>
+        <span>- $@{{ receiptData.discount.toFixed(2) }}</span>
       </div>
       <div style="display:flex;justify-content:space-between;">
         <span>SALES TAX (8%)</span>

@@ -197,7 +197,8 @@ StockSense AI is built around modern software engineering, data, and ML engineer
 
 Recently, StockSense AI underwent five core enterprise production upgrades:
 
-### A. POS Offline Resiliency & Print Receipts
+### A. POS Offline Resiliency, Discounts & Print Receipts
+- **Cart-Level Discount Engine:** Supports applying order discounts as either a percentage (`%`) or a fixed monetary value (`$`). Net subtotal deductions dynamically adjust the 8% sales tax calculation and grand totals in real-time.
 - **Client-Side Storage Caching:** Integrated connection monitoring (`navigator.onLine`). If network connectivity drops, POS checkouts are cached in `localStorage` and automatically synchronized to the cloud on recovery.
 - **Synthesized Audio Engine:** Built a Web Audio API sound generator playing high-fidelity cashier beeps for successful scans and buzzer alerts for offline/connection errors.
 - **Printer-Friendly Receipts (`@media print`):** Flat CSS page resets block height constraints to render clean thermal cash receipts in print preview.

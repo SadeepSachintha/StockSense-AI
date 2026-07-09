@@ -42,6 +42,8 @@ window.vm = createApp({
     const stockoutRisks = ref(0);
     const wmapeAvg = ref(3.8);
     const activeSkusCount = ref(0);
+    const discountType = ref('percent'); // 'percent' or 'value'
+    const discountValue = ref(0);
     
     // SKU List (Fetched dynamically from Laravel API)
     const skus = ref([]);
@@ -765,12 +767,24 @@ window.vm = createApp({
       return cart.value.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
     });
 
+    const discountAmount = computed(() => {
+      if (discountValue.value <= 0) return 0;
+      if (discountType.value === 'percent') {
+        const val = Math.min(100, discountValue.value);
+        return cartSubtotal.value * (val / 100);
+      } else {
+        return Math.min(cartSubtotal.value, discountValue.value);
+      }
+    });
+
     const cartTax = computed(() => {
-      return cartSubtotal.value * 0.08; // 8% sales tax
+      const net = Math.max(0, cartSubtotal.value - discountAmount.value);
+      return net * 0.08; // 8% sales tax
     });
 
     const cartTotal = computed(() => {
-      return cartSubtotal.value + cartTax.value;
+      const net = Math.max(0, cartSubtotal.value - discountAmount.value);
+      return net + cartTax.value;
     });
 
     const submitCheckout = async () => {
@@ -803,6 +817,7 @@ window.vm = createApp({
         tenant_id: activeTenantId.value,
         items: checkoutItems,
         subtotal: subtotalVal,
+        discount: discountAmount.value,
         tax: taxVal,
         total: totalVal,
         isOffline: !isOnline.value
@@ -822,8 +837,9 @@ window.vm = createApp({
           }
         });
 
-        // Clear cart
+        // Clear cart & reset discount
         cart.value = [];
+        discountValue.value = 0;
         receiptData.value = receipt;
         showReceiptModal.value = true;
 
@@ -854,8 +870,9 @@ window.vm = createApp({
 
         const data = await res.json();
         if (data.status === 'success') {
-          // Clear cart
+          // Clear cart & reset discount
           cart.value = [];
+          discountValue.value = 0;
           
           // Populate receipt & show modal
           receiptData.value = receipt;
@@ -1287,7 +1304,10 @@ window.vm = createApp({
       batchProductList,
       addBatchRow,
       removeBatchRow,
-      submitNewProductBatch
+      submitNewProductBatch,
+      discountType,
+      discountValue,
+      discountAmount
     };
   }
 }).mount('#app');
