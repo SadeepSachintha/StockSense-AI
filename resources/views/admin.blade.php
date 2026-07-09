@@ -39,7 +39,7 @@
 
       <div class="sidebar-footer">
         <div style="display:flex;gap:0.5rem;width:100%">
-          <a href="/" class="btn-primary" style="flex:1;justify-content:center;font-size:0.75rem;gap:0.3rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)">
+          <a :href="'/?tenant_id=' + activeTenantId" class="btn-primary" style="flex:1;justify-content:center;font-size:0.75rem;gap:0.3rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)">
             <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
               <polyline points="9 10 4 15 9 20"/>
               <path d="M20 4v7a4 4 0 0 1-4 4H4"/>

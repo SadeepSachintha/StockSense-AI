@@ -6,7 +6,7 @@ window.vm = createApp({
     const activeTab = ref(window.location.pathname.includes('/saas-admin') ? 'admin' : 'overview');
     const systemStatus = ref('ETL Pipeline: Success');
     const systemStatusClass = ref('emerald');
-    const activeTenantId = ref(new URLSearchParams(window.location.search).get('tenant_id') || 'tenant_001');
+    const activeTenantId = ref(new URLSearchParams(window.location.search).get('tenant_id') || localStorage.getItem('active_tenant_id') || 'tenant_001');
 
     // Tenant Administration UI bindings
     const tenantsList = ref([]);
@@ -1150,7 +1150,10 @@ window.vm = createApp({
       try {
         const res = await fetch('/api/tenants', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify(newTenant.value)
         });
         const data = await res.json();
@@ -1178,11 +1181,15 @@ window.vm = createApp({
       try {
         const res = await fetch(`/api/tenants/${tenant.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({ status: targetStatus })
         });
         const data = await res.json();
         if (data.status === 'success') {
+          localStorage.setItem('tenant_settings_updated', Date.now().toString());
           await fetchTenants();
         }
       } catch (err) {
@@ -1194,11 +1201,15 @@ window.vm = createApp({
       try {
         const res = await fetch(`/api/tenants/${tenant.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({ subscription_tier: tier })
         });
         const data = await res.json();
         if (data.status === 'success') {
+          localStorage.setItem('tenant_settings_updated', Date.now().toString());
           await fetchTenants();
         }
       } catch (err) {
@@ -1276,11 +1287,15 @@ window.vm = createApp({
       try {
         const res = await fetch(`/api/tenants/${tenant.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({ tax_rate: parseFloat(newTaxRate) })
         });
         const data = await res.json();
         if (data.status === 'success') {
+          localStorage.setItem('tenant_settings_updated', Date.now().toString());
           toastAlert.value = {
             show: true,
             title: "Tax Settings Updated",
@@ -1298,6 +1313,8 @@ window.vm = createApp({
 
     const switchTenantContext = async (tenantId) => {
       activeTenantId.value = tenantId;
+      localStorage.setItem('active_tenant_id', tenantId);
+      localStorage.setItem('tenant_settings_updated', Date.now().toString());
       const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?tenant_id=${tenantId}`;
       window.history.pushState({ path: newurl }, '', newurl);
       
@@ -1373,6 +1390,22 @@ window.vm = createApp({
       await fetchActiveTenantSettings();
       await fetchSuppliers();
       await fetchLiveProducts();
+
+      // Listen to storage sync events across open tabs/panels
+      window.addEventListener('storage', async (event) => {
+        if (event.key === 'active_tenant_id' && event.newValue) {
+          if (event.newValue !== activeTenantId.value) {
+            activeTenantId.value = event.newValue;
+            const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?tenant_id=${event.newValue}`;
+            window.history.pushState({ path: newurl }, '', newurl);
+          }
+        }
+        if (event.key === 'active_tenant_id' || event.key === 'tenant_settings_updated') {
+          await fetchActiveTenantSettings();
+          await fetchSuppliers();
+          await fetchLiveProducts();
+        }
+      });
 
       // Monitor network online/offline transitions
       window.addEventListener('online', async () => {
