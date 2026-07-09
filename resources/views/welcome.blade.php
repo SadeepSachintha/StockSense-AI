@@ -56,6 +56,15 @@
               Restock Center
             </button>
           </li>
+          <li class="nav-item" :class="{ active: activeTab === 'pos' }">
+            <button @click="activeTab = 'pos'">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="3" width="18" height="18" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 8h10M7 12h10M7 16h4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              POS Terminal
+            </button>
+          </li>
           <li class="nav-item" :class="{ active: activeTab === 'mlops' }">
             <button @click="activeTab = 'mlops'">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -457,6 +466,118 @@
             </table>
           </div>
         </div>
+      </div>
+
+      <!-- Panel: POS Terminal -->
+      <div v-else-if="activeTab === 'pos'" class="pos-terminal-grid">
+        
+        <!-- Left Pane: Product Catalog -->
+        <div class="card">
+          <h3 class="dashboard-card-title">Product Catalog</h3>
+          <div class="pos-catalog-grid">
+            <div v-for="product in skus" :key="product.id" class="pos-product-card">
+              <div>
+                <div style="font-weight:700;font-size:1.05rem;color:var(--text-primary);">@{{ product.name }}</div>
+                <div class="pos-product-meta">SKU: @{{ product.sku }}</div>
+                <div class="pos-product-meta">Category: <i>@{{ product.category }}</i></div>
+              </div>
+              
+              <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;">
+                <div class="pos-product-price">$@{{ product.price.toFixed(2) }}</div>
+                <div>
+                  <span v-if="product.currentStock <= 0" class="badge danger">Out of Stock</span>
+                  <span v-else-if="product.currentStock <= product.safetyStock" class="badge warning">Low Stock (@{{ product.currentStock }})</span>
+                  <span v-else class="badge success">Stock: @{{ product.currentStock }}</span>
+                </div>
+              </div>
+
+              <button 
+                class="btn-primary" 
+                style="font-size:0.8rem;padding:0.4rem 0.8rem;margin-top:1rem;width:100%;justify-content:center;"
+                :disabled="product.currentStock <= 0"
+                @click="addToCart(product)"
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Pane: Checkout Cart -->
+        <div class="card pos-cart-panel">
+          <div>
+            <h3 class="dashboard-card-title">
+              <span>Checkout Cart</span>
+              <span class="badge purple" style="font-size:0.75rem;">@{{ cart.length }} items</span>
+            </h3>
+
+            <div v-if="cart.length === 0" style="text-align:center;padding:3rem 0;color:var(--text-muted);">
+              <svg style="width:48px;height:48px;margin:0 auto 1rem;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24">
+                <circle cx="9" cy="21" r="1"/>
+                <circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              </svg>
+              <div>Your cart is empty.</div>
+              <div style="font-size:0.75rem;margin-top:0.25rem;">Select products from the catalog to add them here.</div>
+            </div>
+
+            <div v-else class="cart-items-list">
+              <div v-for="item in cart" :key="item.product.id" class="cart-item-row">
+                <div style="flex:1;padding-right:0.5rem;">
+                  <div style="font-weight:600;font-size:0.85rem;">@{{ item.product.name }}</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">$@{{ item.product.price.toFixed(2) }} each</div>
+                </div>
+
+                <div class="qty-counter">
+                  <button class="qty-btn" @click="removeFromCart(item)">&minus;</button>
+                  <span style="font-weight:600;font-size:0.85rem;min-width:16px;text-align:center;">@{{ item.quantity }}</span>
+                  <button class="qty-btn" @click="addToCart(item.product)">&plus;</button>
+                </div>
+
+                <div style="min-width:60px;text-align:right;font-weight:600;font-size:0.85rem;margin-left:0.75rem;">
+                  $@{{ (item.product.price * item.quantity).toFixed(2) }}
+                </div>
+
+                <button 
+                  style="background:transparent;border:none;color:var(--accent-rose);cursor:pointer;margin-left:0.5rem;display:flex;align-items:center;"
+                  @click="deleteFromCart(item)"
+                >
+                  <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="cart-totals-section">
+              <div style="display:flex;justify-content:space-between;">
+                <span style="color:var(--text-secondary);">Subtotal:</span>
+                <strong>$@{{ cartSubtotal.toFixed(2) }}</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;">
+                <span style="color:var(--text-secondary);">Sales Tax (8%):</span>
+                <strong>$@{{ cartTax.toFixed(2) }}</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.05);padding-top:0.5rem;font-size:1.05rem;color:var(--text-primary);">
+                <span>Total Amount:</span>
+                <strong style="color:var(--accent-emerald);">$@{{ cartTotal.toFixed(2) }}</strong>
+              </div>
+            </div>
+
+            <button 
+              class="btn-primary" 
+              style="width:100%;margin-top:1.25rem;justify-content:center;font-size:0.95rem;padding:0.75rem;"
+              :disabled="cart.length === 0"
+              @click="submitCheckout"
+            >
+              Complete Sale (Checkout)
+            </button>
+          </div>
+        </div>
+
       </div>
 
       <!-- Panel 4: MLOps Model Health & Drift Monitor -->

@@ -522,6 +522,112 @@ createApp({
       })();
     };
 
+    // POS Terminal Cart state management
+    const cart = ref([]);
+
+    const addToCart = (product) => {
+      if (product.currentStock <= 0) {
+        alert("This item is currently out of stock!");
+        return;
+      }
+      const item = cart.value.find(i => i.product.id === product.id);
+      if (item) {
+        if (item.quantity >= product.currentStock) {
+          alert("Cannot exceed available stock limit!");
+          return;
+        }
+        item.quantity++;
+      } else {
+        cart.value.push({ product, quantity: 1 });
+      }
+    };
+
+    const removeFromCart = (item) => {
+      const idx = cart.value.findIndex(i => i.product.id === item.product.id);
+      if (idx !== -1) {
+        if (cart.value[idx].quantity > 1) {
+          cart.value[idx].quantity--;
+        } else {
+          cart.value.splice(idx, 1);
+        }
+      }
+    };
+
+    const deleteFromCart = (item) => {
+      const idx = cart.value.findIndex(i => i.product.id === item.product.id);
+      if (idx !== -1) {
+        cart.value.splice(idx, 1);
+      }
+    };
+
+    const cartSubtotal = computed(() => {
+      return cart.value.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+    });
+
+    const cartTax = computed(() => {
+      return cartSubtotal.value * 0.08; // 8% sales tax
+    });
+
+    const cartTotal = computed(() => {
+      return cartSubtotal.value + cartTax.value;
+    });
+
+    const submitCheckout = async () => {
+      if (cart.value.length === 0) return;
+      
+      systemStatus.value = "Processing checkout...";
+      systemStatusClass.value = "warning";
+      
+      const payload = {
+        transactions: cart.value.map(item => ({
+          sku: item.product.sku,
+          quantity: item.quantity,
+          price_sold: item.product.price,
+          transaction_date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+        }))
+      };
+
+      try {
+        const res = await fetch('/api/products/ingest?tenant_id=tenant_001', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Tenant-ID': 'tenant_001'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (data.status === 'success') {
+          // Clear cart
+          cart.value = [];
+          
+          // Toast Notification
+          toastAlert.value = {
+            show: true,
+            title: "Transaction Complete",
+            msg: `Successfully processed checkout of ${data.ingested_count} item(s). Inventory synced.`,
+            skuName: "POS Checkout",
+            channel: "POS Terminal"
+          };
+          
+          setTimeout(() => { toastAlert.value.show = false; }, 4000);
+          
+          // Reload products list to reflect new stocks and update alerts
+          await fetchLiveProducts();
+        } else {
+          alert("Checkout failed: " + data.message);
+          systemStatus.value = "Checkout failed.";
+          systemStatusClass.value = "danger";
+        }
+      } catch (err) {
+        console.error("Checkout error:", err);
+        alert("Server communication error.");
+        systemStatus.value = "SaaS offline.";
+        systemStatusClass.value = "danger";
+      }
+    };
+
     onMounted(async () => {
       await fetchLiveProducts();
     });
@@ -551,7 +657,15 @@ createApp({
       toastAlert,
       triggerPOSUpload,
       sendRestockAlert,
-      triggerRetraining
+      triggerRetraining,
+      cart,
+      addToCart,
+      removeFromCart,
+      deleteFromCart,
+      cartSubtotal,
+      cartTax,
+      cartTotal,
+      submitCheckout
     };
   }
 }).mount('#app');
