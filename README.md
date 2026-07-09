@@ -228,3 +228,4 @@ Recently, StockSense AI underwent six core enterprise production upgrades:
 - **Dynamic Tenant VAT Columns:** Added a customizable `tax_rate` attribute (defaulting to 8%) to all registered business tenant stores inside the Neon PostgreSQL database.
 - **Administrative Tax Controls:** Allows SaaS operators to adjust each customer store's VAT rate inline in the Accounts table or during provisioning.
 - **Active Session Scoped Calculations:** The cashier terminal dynamically reads and applies the store's tax rates on checkouts and outputs correct percentages in printable invoices.
+- **Cross-Tab Settings Synchronization:** Implemented native HTML5 local storage synchronization event listeners across tabs. Setting updates (such as changing the VAT/tax rate to 0%) or switching context scopes in the SaaS Admin console immediately broadcasts and forces dynamic settings reloading on any open Cashier terminal instances in real-time.
