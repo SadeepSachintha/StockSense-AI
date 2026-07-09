@@ -20,6 +20,8 @@ createApp({
     const barcodeScanClass = ref('');
     const showBarcodeSuggestions = ref(false);
     const activeSuggestionIndex = ref(-1);
+    const activeModel = ref('lightgbm');
+    const driftLimit = ref(5.0);
     const savedCapital = ref(12450);
     const stockoutRisks = ref(0);
     const wmapeAvg = ref(3.8);
@@ -120,6 +122,18 @@ createApp({
       
       const salesHistoryDataset = [...sku.salesHistory, ...Array(14).fill(null)];
       
+      // Calculate Prophet curve based on baseline forecast
+      const prophetForecast = adjustedForecast.value.map((v, i) => {
+        const seasonalFactor = Math.sin(i / 1.5) * 4;
+        return Math.max(0, Math.round(v + seasonalFactor));
+      });
+
+      // Calculate LSTM curve based on baseline forecast
+      const lstmForecast = adjustedForecast.value.map((v, i) => {
+        const noise = Math.cos(i) * 3 - (i * 0.15);
+        return Math.max(0, Math.round(v * 0.95 + noise));
+      });
+
       const baselineForecastPadded = [
         ...Array(30).fill(null),
         sku.salesHistory[sku.salesHistory.length - 1], // link point
@@ -130,6 +144,18 @@ createApp({
         ...Array(30).fill(null),
         sku.salesHistory[sku.salesHistory.length - 1], // link point
         ...adjustedForecast.value.slice(1)
+      ];
+
+      const prophetForecastPadded = [
+        ...Array(30).fill(null),
+        sku.salesHistory[sku.salesHistory.length - 1],
+        ...prophetForecast.slice(1)
+      ];
+
+      const lstmForecastPadded = [
+        ...Array(30).fill(null),
+        sku.salesHistory[sku.salesHistory.length - 1],
+        ...lstmForecast.slice(1)
       ];
 
       const errorMargin = 0.15; // 15% confidence interval band
@@ -160,23 +186,33 @@ createApp({
             fill: true
           },
           {
-            label: 'Demand Forecast (Adjusted)',
+            label: 'LightGBM Predictor',
             data: adjustedForecastPadded,
-            borderColor: '#8b5cf6',
-            borderDash: [5, 5],
-            borderWidth: 3,
-            pointRadius: 0,
+            borderColor: activeModel.value === 'lightgbm' ? '#10b981' : 'rgba(16, 185, 129, 0.25)',
+            borderDash: activeModel.value === 'lightgbm' ? [] : [4, 4],
+            borderWidth: activeModel.value === 'lightgbm' ? 3.5 : 1.5,
+            pointRadius: activeModel.value === 'lightgbm' ? 2 : 0,
             tension: 0.3,
             fill: false
           },
           {
-            label: 'Baseline Forecast',
-            data: baselineForecastPadded,
-            borderColor: 'rgba(139, 92, 246, 0.3)',
-            borderDash: [3, 3],
-            borderWidth: 1.5,
-            pointRadius: 0,
-            tension: 0.3,
+            label: 'Prophet Seasonality',
+            data: prophetForecastPadded,
+            borderColor: activeModel.value === 'prophet' ? '#3b82f6' : 'rgba(59, 130, 246, 0.25)',
+            borderDash: activeModel.value === 'prophet' ? [] : [4, 4],
+            borderWidth: activeModel.value === 'prophet' ? 3.5 : 1.5,
+            pointRadius: activeModel.value === 'prophet' ? 2 : 0,
+            tension: 0.35,
+            fill: false
+          },
+          {
+            label: 'LSTM Deep Learning',
+            data: lstmForecastPadded,
+            borderColor: activeModel.value === 'lstm' ? '#8b5cf6' : 'rgba(139, 92, 246, 0.25)',
+            borderDash: activeModel.value === 'lstm' ? [] : [4, 4],
+            borderWidth: activeModel.value === 'lstm' ? 3.5 : 1.5,
+            pointRadius: activeModel.value === 'lstm' ? 2 : 0,
+            tension: 0.25,
             fill: false
           },
           {
@@ -192,7 +228,7 @@ createApp({
             label: 'Upper Bound CI',
             data: confidenceUpperPadded,
             borderColor: 'transparent',
-            backgroundColor: 'rgba(139, 92, 246, 0.05)',
+            backgroundColor: 'rgba(139, 92, 246, 0.03)',
             pointRadius: 0,
             fill: '+1',
             tension: 0.3
@@ -201,7 +237,7 @@ createApp({
             label: 'Lower Bound CI',
             data: confidenceLowerPadded,
             borderColor: 'transparent',
-            backgroundColor: 'rgba(139, 92, 246, 0.05)',
+            backgroundColor: 'rgba(139, 92, 246, 0.03)',
             pointRadius: 0,
             fill: false,
             tension: 0.3
@@ -359,6 +395,10 @@ createApp({
     });
 
     watch(priceAdjustment, () => {
+      renderChart();
+    });
+
+    watch(activeModel, () => {
       renderChart();
     });
 
@@ -527,14 +567,32 @@ createApp({
         await appendLog('Executing Task [train_lgbm] - Fitting LightGBM regressor models...', 'info', 600);
         await appendLog('Optuna: 50 parameter trials complete. Best loss (WMAPE): 3.52%', 'success', 400);
         await appendLog('Executing Task [register_model] - Logging run to MLflow Registry...', 'info', 400);
-        await appendLog('Executing Task [verify_drift] - Drift verify completed (2.41% score).', 'success', 300);
+        await appendLog('Executing Task [verify_drift] - Drift verify completed (0.78% score).', 'success', 300);
         await appendLog('DAG completed successfully. FastAPI prediction cached reloaded.', 'success', 400);
         
-        modelDriftScore.value = 2.4;
+        modelDriftScore.value = 0.8;
         wmapeAvg.value = 3.5;
         isRetraining.value = false;
       })();
     };
+
+    const checkDriftAutorecovery = () => {
+      if (modelDriftScore.value > driftLimit.value && !isRetraining.value) {
+        // Trigger auto-recovery!
+        const time = new Date().toLocaleTimeString();
+        mlopsLogs.value.unshift({
+          time: time,
+          text: `WARNING: Model drift score (${modelDriftScore.value}%) exceeds threshold (${driftLimit.value}%). Autorecovery triggered.`,
+          type: 'danger'
+        });
+        
+        triggerRetraining();
+      }
+    };
+
+    watch(driftLimit, () => {
+      checkDriftAutorecovery();
+    });
 
     // POS Terminal Cart state management
     const cart = ref([]);
@@ -1046,6 +1104,14 @@ createApp({
           showBarcodeSuggestions.value = false;
         }
       });
+
+      // Fluctuate model drift score periodically and check limit triggers
+      setInterval(() => {
+        if (isRetraining.value) return;
+        const delta = (Math.random() * 0.45 - 0.15); // skew slightly upwards
+        modelDriftScore.value = parseFloat(Math.max(0.5, Math.min(10.0, modelDriftScore.value + delta)).toFixed(2));
+        checkDriftAutorecovery();
+      }, 15000);
     });
 
     return {
@@ -1102,7 +1168,9 @@ createApp({
       showBarcodeSuggestions,
       activeSuggestionIndex,
       moveSuggestionActive,
-      selectActiveSuggestion
+      selectActiveSuggestion,
+      activeModel,
+      driftLimit
     };
   }
 }).mount('#app');

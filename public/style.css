@@ -1369,6 +1369,110 @@ body {
   color: var(--accent-emerald);
 }
 
+/* Model Comparison & Drift Configuration Styles */
+.model-comparison-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.model-comparison-badge.lgb {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.model-comparison-badge.prophet {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.model-comparison-badge.lstm {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.model-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.model-spec-card {
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  transition: all 0.25s ease;
+  text-align: left;
+}
+
+.model-spec-card.active {
+  border-color: var(--accent-purple);
+  background: rgba(139, 92, 246, 0.03);
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.12);
+}
+
+.drift-config-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.drift-slider-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.drift-limit-badge {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 0.25rem 0.5rem;
+  font-family: monospace;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.drift-status-indicator {
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.drift-status-indicator.normal {
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.drift-status-indicator.critical {
+  background: rgba(244, 63, 94, 0.15);
+  color: #f43f5e;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  animation: pulse-red-border 2s infinite ease-in-out;
+}
+
+@keyframes pulse-red-border {
+  0%, 100% { border-color: rgba(244, 63, 94, 0.3); box-shadow: 0 0 4px rgba(244, 63, 94, 0); }
+  50% { border-color: rgba(244, 63, 94, 0.7); box-shadow: 0 0 10px rgba(244, 63, 94, 0.15); }
+}
+
 /* responsive adjustments */
 @media(max-width: 1200px) {
   .kpi-grid {

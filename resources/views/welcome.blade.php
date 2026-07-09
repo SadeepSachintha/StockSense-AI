@@ -365,11 +365,21 @@
 
         <!-- The main chart card -->
         <div class="card">
-          <div class="dashboard-card-title">
-            <span>Dynamic Demand Forecast & Confidence Bounds</span>
-            <div style="font-size:0.75rem;color:var(--text-muted);font-weight:normal">
-              <span style="display:inline-block;width:12px;height:12px;background:rgba(139,92,246,0.15);border:1px dashed var(--accent-purple);margin-right:4px;vertical-align:middle"></span>
-              95% Confidence Interval (Drift Bounds)
+          <div class="dashboard-card-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
+            <div>
+              <span>Dynamic Demand Forecast & Confidence Bounds</span>
+              <div style="font-size:0.75rem;color:var(--text-muted);font-weight:normal;margin-top:0.25rem">
+                <span style="display:inline-block;width:12px;height:12px;background:rgba(139,92,246,0.15);border:1px dashed var(--accent-purple);margin-right:4px;vertical-align:middle"></span>
+                95% Confidence Interval (Drift Bounds)
+              </div>
+            </div>
+            <div style="display:inline-flex;gap:0.5rem;align-items:center">
+              <label style="font-size:0.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase">Active Model:</label>
+              <select v-model="activeModel" class="select-input" style="padding:0.35rem 0.75rem;font-size:0.75rem;width:auto">
+                <option value="lightgbm">LightGBM (Optimal)</option>
+                <option value="prophet">Prophet (Seasonal)</option>
+                <option value="lstm">LSTM (Deep Learning)</option>
+              </select>
             </div>
           </div>
           <div style="height: 380px; position: relative;">
@@ -387,6 +397,42 @@
             <div style="text-align:center">
               <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.25rem">Recommended Order Qty</div>
               <strong style="font-size:1.1rem;color:var(--accent-emerald)">@{{ selectedSku.reorderQty }} units</strong>
+            </div>
+          </div>
+
+          <!-- Model comparison info grid -->
+          <div class="model-specs-grid">
+            <div class="model-spec-card" :class="{ active: activeModel === 'lightgbm' }">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+                <strong style="font-size:0.85rem">LightGBM</strong>
+                <span class="model-comparison-badge lgb" v-if="activeModel === 'lightgbm'">Active</span>
+                <span class="model-comparison-badge" style="background:rgba(255,255,255,0.03);color:var(--text-muted);border:1px solid rgba(255,255,255,0.08)" v-else>Overlay</span>
+              </div>
+              <div style="font-size:0.72rem;color:var(--text-secondary);line-height:1.4">
+                Best for pricing elasticities and tabular attributes. High sensitivity to price adjustments.
+              </div>
+            </div>
+
+            <div class="model-spec-card" :class="{ active: activeModel === 'prophet' }">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+                <strong style="font-size:0.85rem">Prophet</strong>
+                <span class="model-comparison-badge prophet" v-if="activeModel === 'prophet'">Active</span>
+                <span class="model-comparison-badge" style="background:rgba(255,255,255,0.03);color:var(--text-muted);border:1px solid rgba(255,255,255,0.08)" v-else>Overlay</span>
+              </div>
+              <div style="font-size:0.72rem;color:var(--text-secondary);line-height:1.4">
+                Best for strong holiday seasonal patterns. Additive regression model with Fourier smoothing.
+              </div>
+            </div>
+
+            <div class="model-spec-card" :class="{ active: activeModel === 'lstm' }">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+                <strong style="font-size:0.85rem">LSTM (RNN)</strong>
+                <span class="model-comparison-badge lstm" v-if="activeModel === 'lstm'">Active</span>
+                <span class="model-comparison-badge" style="background:rgba(255,255,255,0.03);color:var(--text-muted);border:1px solid rgba(255,255,255,0.08)" v-else>Overlay</span>
+              </div>
+              <div style="font-size:0.72rem;color:var(--text-secondary);line-height:1.4">
+                Deep learning recurrent neural networks. Captures non-linear dependencies in transaction records.
+              </div>
             </div>
           </div>
         </div>
@@ -681,6 +727,40 @@
                   Inference Models Performing Stable
                 </span>
               </div>
+            </div>
+          </div>
+
+          <!-- Drift Autorecovery Threshold Configuration -->
+          <div class="card drift-config-card">
+            <h3 class="dashboard-card-title">Drift Autorecovery Limits</h3>
+            <p style="font-size:0.75rem;color:var(--text-muted);line-height:1.4">
+              Configure the threshold tolerance for automatic model recalibration triggers. If actual sales diverge beyond limits, the Airflow pipeline fires auto-recovery retraining.
+            </p>
+            
+            <div class="drift-slider-container">
+              <span style="font-size:0.8rem;color:var(--text-secondary)">Autorecovery Limit:</span>
+              <span class="drift-limit-badge">@{{ driftLimit.toFixed(1) }}% Drift</span>
+            </div>
+            
+            <input 
+              type="range" 
+              min="1.0" 
+              max="9.0" 
+              step="0.5" 
+              v-model.number="driftLimit" 
+              class="range-slider" 
+              style="width:100%;margin-top:0.25rem"
+            >
+            
+            <div 
+              class="drift-status-indicator"
+              :class="modelDriftScore > driftLimit ? 'critical' : 'normal'"
+            >
+              <div class="scanner-pulse" style="background:#f43f5e;animation-duration:1s" v-if="modelDriftScore > driftLimit"></div>
+              <div class="scanner-pulse" style="background:#10b981" v-else></div>
+              <span>
+                @{{ modelDriftScore > driftLimit ? 'CRITICAL DRIFT - RECOVERY RETRAIN QUEUED' : 'STABLE - WITHIN OPERATION TOLERANCES' }}
+              </span>
             </div>
           </div>
 
