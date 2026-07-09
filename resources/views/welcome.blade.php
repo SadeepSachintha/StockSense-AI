@@ -78,6 +78,9 @@
             <path d="M6 9l6 6 6-6"/>
           </svg>
         </div>
+        <div class="branding-footer" style="margin-top: 1rem; text-align: center; font-size: 0.75rem; color: var(--text-muted);">
+          A product of <a href="https://ss-labz.pages.dev/" target="_blank" style="color: var(--accent-purple); text-decoration: none; font-weight: 500; transition: color 0.3s;" onmouseover="this.style.color='#a78bfa'" onmouseout="this.style.color='#8b5cf6'">SS Labz</a>
+        </div>
       </div>
     </aside>
 
