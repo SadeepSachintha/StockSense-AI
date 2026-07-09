@@ -90,4 +90,69 @@ class MultiTenantScopeTest extends TestCase
         $this->assertCount(1, $activeProducts);
         $this->assertEquals('Product B', $activeProducts->first()->name);
     }
+
+    /** @test */
+    public function it_can_batch_create_products_scoped_to_the_active_tenant(): void
+    {
+        $tenantA = Tenant::create([
+            'id' => 'tenant_a',
+            'name' => 'Tenant A Retailers',
+            'subscription_tier' => 'basic',
+            'status' => 'active'
+        ]);
+
+        \App\Models\Supplier::create([
+            'id' => 1,
+            'tenant_id' => 'tenant_a',
+            'name' => 'AgriBulk Corp',
+            'contact_name' => 'John Agri',
+            'email' => 'agribulk@test.com',
+            'phone' => '123456'
+        ]);
+        
+        \App\Models\Supplier::create([
+            'id' => 2,
+            'tenant_id' => 'tenant_a',
+            'name' => 'GrownOrganic Farms',
+            'contact_name' => 'Jane Organic',
+            'email' => 'organic@test.com',
+            'phone' => '654321'
+        ]);
+
+        $response = $this->withSession(['tenant_id' => 'tenant_a'])
+            ->postJson('/api/products', [
+                'products' => [
+                    [
+                        'sku' => 'SKU-BATCH-1',
+                        'name' => 'Batch Product 1',
+                        'category' => 'Batch',
+                        'price' => 12.00,
+                        'current_stock' => 50,
+                        'safety_stock' => 10,
+                        'max_stock' => 100,
+                        'reorder_qty' => 30,
+                        'lead_time_days' => 4,
+                        'supplier_id' => 1,
+                    ],
+                    [
+                        'sku' => 'SKU-BATCH-2',
+                        'name' => 'Batch Product 2',
+                        'category' => 'Batch',
+                        'price' => 15.50,
+                        'current_stock' => 60,
+                        'safety_stock' => 12,
+                        'max_stock' => 120,
+                        'reorder_qty' => 40,
+                        'lead_time_days' => 5,
+                        'supplier_id' => 2,
+                    ]
+                ]
+            ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonFragment(['status' => 'success']);
+
+        $this->tenantManager->setTenantId('tenant_a');
+        $this->assertCount(2, Product::all());
+    }
 }

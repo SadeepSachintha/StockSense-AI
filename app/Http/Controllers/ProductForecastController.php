@@ -99,6 +99,53 @@ class ProductForecastController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // Check if bulk array is provided
+        if ($request->has('products') && is_array($request->input('products'))) {
+            $validated = $request->validate([
+                'products' => 'required|array|min:1',
+                'products.*.sku' => 'required|string|unique:products,sku',
+                'products.*.name' => 'required|string',
+                'products.*.category' => 'required|string',
+                'products.*.price' => 'required|numeric|min:0.01',
+                'products.*.current_stock' => 'required|integer|min:0',
+                'products.*.safety_stock' => 'required|integer|min:0',
+                'products.*.max_stock' => 'required|integer|min:1',
+                'products.*.reorder_qty' => 'required|integer|min:1',
+                'products.*.lead_time_days' => 'required|integer|min:1',
+                'products.*.supplier_id' => 'required|exists:suppliers,id',
+                'products.*.elasticity' => 'nullable|numeric',
+            ]);
+
+            $created = [];
+            $tenantId = session('tenant_id') ?? $request->header('X-Tenant-ID') ?? 'tenant_001';
+
+            DB::beginTransaction();
+            try {
+                foreach ($validated['products'] as $prod) {
+                    if (!isset($prod['elasticity'])) {
+                        $prod['elasticity'] = -1.2;
+                    }
+                    $prod['tenant_id'] = $tenantId;
+                    $product = Product::create($prod);
+                    $created[] = $product->load('supplier');
+                }
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Batch creation failed: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Batch product list registered successfully.',
+                'data' => $created
+            ], 201);
+        }
+
+        // Single product logic
         $validated = $request->validate([
             'sku' => 'required|string|unique:products,sku',
             'name' => 'required|string',
@@ -113,14 +160,11 @@ class ProductForecastController extends Controller
             'elasticity' => 'nullable|numeric',
         ]);
 
-        // Default elasticity mapping if not supplied
         if (!isset($validated['elasticity'])) {
-            $validated['elasticity'] = -1.2; // typical retail elasticity coefficient
+            $validated['elasticity'] = -1.2;
         }
 
-        // Set tenant context automatically
         $validated['tenant_id'] = session('tenant_id') ?? $request->header('X-Tenant-ID') ?? 'tenant_001';
-
         $product = Product::create($validated);
 
         return response()->json([

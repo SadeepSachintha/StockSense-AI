@@ -23,7 +23,8 @@ window.vm = createApp({
     const activeModel = ref('lightgbm');
     const driftLimit = ref(5.0);
     const showAddProductModal = ref(false);
-    const newProductData = ref({
+    const addProductTab = ref('single');
+    const createBlankProduct = () => ({
       sku: '',
       name: '',
       category: '',
@@ -35,6 +36,8 @@ window.vm = createApp({
       lead_time_days: 3,
       supplier_id: ''
     });
+    const newProductData = ref(createBlankProduct());
+    const batchProductList = ref([createBlankProduct()]);
     const savedCapital = ref(12450);
     const stockoutRisks = ref(0);
     const wmapeAvg = ref(3.8);
@@ -952,6 +955,51 @@ window.vm = createApp({
       }
     };
 
+    const addBatchRow = () => {
+      batchProductList.value.push(createBlankProduct());
+    };
+
+    const removeBatchRow = (index) => {
+      if (batchProductList.value.length > 1) {
+        batchProductList.value.splice(index, 1);
+      }
+    };
+
+    const submitNewProductBatch = async () => {
+      try {
+        const res = await fetch(`/api/products?tenant_id=${activeTenantId.value}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Tenant-ID': activeTenantId.value
+          },
+          body: JSON.stringify({ products: batchProductList.value })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          showAddProductModal.value = false;
+          
+          toastAlert.value = {
+            show: true,
+            title: "Products Created",
+            msg: `Successfully added batch of ${batchProductList.value.length} products to the POS catalog.`,
+            skuName: "BATCH LIST",
+            channel: "Inventory Scope Manager"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 4000);
+
+          batchProductList.value = [createBlankProduct()];
+          playPOSSound('success');
+          await fetchLiveProducts();
+        } else {
+          alert("Failed to create batch: " + (data.message || JSON.stringify(data.errors || data)));
+        }
+      } catch (err) {
+        console.error("Error creating batch products:", err);
+        alert("Server communication error.");
+      }
+    };
+
     // Tenants management actions
     const fetchTenants = async () => {
       try {
@@ -1234,7 +1282,12 @@ window.vm = createApp({
       driftLimit,
       showAddProductModal,
       newProductData,
-      submitNewProduct
+      submitNewProduct,
+      addProductTab,
+      batchProductList,
+      addBatchRow,
+      removeBatchRow,
+      submitNewProductBatch
     };
   }
 }).mount('#app');

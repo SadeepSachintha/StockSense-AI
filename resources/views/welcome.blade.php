@@ -959,13 +959,34 @@
       </div>
     <!-- Add Product Modal Overlay -->
     <div class="modal-overlay" v-if="showAddProductModal">
-      <div class="receipt-modal" style="max-width: 500px; padding: 2.25rem;">
-        <div style="text-align:center;margin-bottom:1.5rem">
+      <div class="receipt-modal" :style="addProductTab === 'batch' ? 'max-width: 95%; width: 1100px; padding: 2rem;' : 'max-width: 500px; padding: 2.25rem;'">
+        <div style="text-align:center;margin-bottom:1rem">
           <div style="font-size:1.5rem;font-weight:800;font-family:var(--font-display);color:var(--accent-purple);">Add Product to Catalog</div>
-          <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.25rem;">Fill in the product details below. Scoped to the active tenant.</div>
+          <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.25rem;">Provision SKUs under the active tenant context.</div>
         </div>
 
-        <form @submit.prevent="submitNewProduct">
+        <!-- Tab Switcher -->
+        <div style="display:flex;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:0.25rem;margin-bottom:1.5rem">
+          <button 
+            type="button" 
+            style="flex:1;padding:0.5rem;border-radius:6px;font-size:0.8rem;font-weight:600;border:none;cursor:pointer;transition:all 0.2s;"
+            :style="addProductTab === 'single' ? 'background:var(--accent-purple);color:#fff;' : 'background:transparent;color:var(--text-secondary);'"
+            @click="addProductTab = 'single'"
+          >
+            Single SKU Form
+          </button>
+          <button 
+            type="button" 
+            style="flex:1;padding:0.5rem;border-radius:6px;font-size:0.8rem;font-weight:600;border:none;cursor:pointer;transition:all 0.2s;"
+            :style="addProductTab === 'batch' ? 'background:var(--accent-purple);color:#fff;' : 'background:transparent;color:var(--text-secondary);'"
+            @click="addProductTab = 'batch'"
+          >
+            Batch List Table
+          </button>
+        </div>
+
+        <!-- Tab A: Single SKU Form -->
+        <form @submit.prevent="submitNewProduct" v-if="addProductTab === 'single'">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
             <div>
               <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Product Name</label>
@@ -1030,6 +1051,98 @@
             </button>
             <button type="submit" class="btn-primary" style="flex:1;justify-content:center;padding:0.65rem;background:var(--gradient-purple)">
               Create SKU Item
+            </button>
+          </div>
+        </form>
+
+        <!-- Tab B: Batch List Table -->
+        <form @submit.prevent="submitNewProductBatch" v-else-if="addProductTab === 'batch'">
+          <div class="data-table-container" style="max-height: 380px; overflow-y: auto; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="min-width: 140px; font-size: 0.75rem;">Product Name</th>
+                  <th style="min-width: 110px; font-size: 0.75rem;">SKU Code</th>
+                  <th style="min-width: 90px; font-size: 0.75rem;">Category</th>
+                  <th style="width: 80px; font-size: 0.75rem;">Price ($)</th>
+                  <th style="width: 70px; font-size: 0.75rem;">Stock</th>
+                  <th style="width: 70px; font-size: 0.75rem;">Safety</th>
+                  <th style="width: 70px; font-size: 0.75rem;">Max</th>
+                  <th style="width: 70px; font-size: 0.75rem;">Reorder</th>
+                  <th style="width: 75px; font-size: 0.75rem;">Lead (Days)</th>
+                  <th style="min-width: 120px; font-size: 0.75rem;">Supplier</th>
+                  <th style="width: 40px; text-align: center;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(prod, index) in batchProductList" :key="index">
+                  <td style="padding: 0.4rem 0.25rem;">
+                    <input type="text" class="admin-input" style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%" v-model="prod.name" placeholder="Name" required>
+                  </td>
+                  <td style="padding: 0.4rem 0.25rem;">
+                    <input type="text" class="admin-input" style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%" v-model="prod.sku" placeholder="SKU" required>
+                  </td>
+                  <td style="padding: 0.4rem 0.25rem;">
+                    <input type="text" class="admin-input" style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%" v-model="prod.category" placeholder="Category" required>
+                  </td>
+                  <td style="padding: 0.4rem 0.25rem;">
+                    <input type="number" step="0.01" min="0.01" class="admin-input" style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%" v-model.number="prod.price" required>
+                  </td>
+                  <td style="padding: 0.4rem 0.25rem;">
+                    <input type="number" min="0" class="admin-input" style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%" v-model.number="prod.current_stock" required>
+                  </td>
+                  <td style="padding: 0.4rem 0.25rem;">
+                    <input type="number" min="0" class="admin-input" style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%" v-model.number="prod.safety_stock" required>
+                  </td>
+                  <td style="padding: 0.4rem 0.25rem;">
+                    <input type="number" min="1" class="admin-input" style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%" v-model.number="prod.max_stock" required>
+                  </td>
+                  <td style="padding: 0.4rem 0.25rem;">
+                    <input type="number" min="1" class="admin-input" style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%" v-model.number="prod.reorder_qty" required>
+                  </td>
+                  <td style="padding: 0.4rem 0.25rem;">
+                    <input type="number" min="1" class="admin-input" style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%" v-model.number="prod.lead_time_days" required>
+                  </td>
+                  <td style="padding: 0.4rem 0.25rem;">
+                    <select class="select-input" style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%;height:auto" v-model="prod.supplier_id" required>
+                      <option value="" disabled>Select...</option>
+                      <option value="1">AgriBulk Corp</option>
+                      <option value="2">GrownOrganic Farms</option>
+                      <option value="3">VeggieDistributors</option>
+                    </select>
+                  </td>
+                  <td style="padding: 0.4rem 0.25rem; text-align: center;">
+                    <button type="button" class="btn-mini danger" style="padding:0.35rem;border-radius:4px" :disabled="batchProductList.length <= 1" @click="removeBatchRow(index)">
+                      <svg style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+            <button type="button" class="btn-primary" style="padding:0.45rem 0.85rem;font-size:0.75rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:var(--text-primary)" @click="addBatchRow">
+              <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add Product Row
+            </button>
+            <div style="font-size:0.8rem;color:var(--text-muted)">
+              Total List Size: <span style="color:var(--accent-purple);font-weight:700">@{{ batchProductList.length }} products</span>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:0.75rem;justify-content:flex-end">
+            <button type="button" class="btn-secondary" style="width:150px;justify-content:center;padding:0.65rem" @click="showAddProductModal = false">
+              Cancel
+            </button>
+            <button type="submit" class="btn-primary" style="width:220px;justify-content:center;padding:0.65rem;background:var(--gradient-purple)">
+              Create SKU List
             </button>
           </div>
         </form>
