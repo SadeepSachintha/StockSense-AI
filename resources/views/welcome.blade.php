@@ -494,6 +494,27 @@
           <span>Offline Mode Active. Transactions will be cached locally and synced on reconnection.</span>
         </div>
 
+        <!-- Barcode Reader Control Panel -->
+        <div class="barcode-scanner-container">
+          <div class="barcode-input-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2M19 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2M12 6v12M8 6v12M16 6v12"/>
+            </svg>
+            <input 
+              type="text" 
+              class="barcode-input" 
+              :class="barcodeScanClass"
+              placeholder="Scan item barcode or type SKU (e.g. SKU-RICE-001) & press Enter..." 
+              v-model="barcodeQuery"
+              @keydown.enter="addSkuByBarcode(barcodeQuery)"
+            >
+          </div>
+          <div class="scanner-badge">
+            <div class="scanner-pulse"></div>
+            <span>POS Laser Reader Active</span>
+          </div>
+        </div>
+
         <div class="pos-terminal-grid">
         
         <!-- Left Pane: Product Catalog -->

@@ -16,6 +16,8 @@ createApp({
     const isOnline = ref(navigator.onLine);
     const showReceiptModal = ref(false);
     const receiptData = ref(null);
+    const barcodeQuery = ref('');
+    const barcodeScanClass = ref('');
     const savedCapital = ref(12450);
     const stockoutRisks = ref(0);
     const wmapeAvg = ref(3.8);
@@ -570,6 +572,80 @@ createApp({
       }
     };
 
+    const playPOSSound = (type) => {
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        const ctx = new AudioContextClass();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        if (type === 'success') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(1450, ctx.currentTime);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.08);
+        } else if (type === 'error') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(120, ctx.currentTime);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.25);
+        }
+      } catch (err) {
+        console.warn("Audio feedback block:", err);
+      }
+    };
+
+    const addSkuByBarcode = (barcode) => {
+      if (!barcode) return;
+      const cleanBarcode = barcode.trim();
+      const product = skus.value.find(s => s.sku.toUpperCase() === cleanBarcode.toUpperCase() || s.id.toString() === cleanBarcode);
+      
+      if (product) {
+        if (product.currentStock <= 0) {
+          playPOSSound('error');
+          barcodeScanClass.value = 'scan-error';
+          setTimeout(() => { barcodeScanClass.value = ''; }, 600);
+          
+          toastAlert.value = {
+            show: true,
+            title: "Out of Stock",
+            msg: `SKU ${product.sku} is completely sold out. Unable to add to cart.`,
+            skuName: product.name,
+            channel: "Barcode Reader"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 4000);
+          return;
+        }
+        
+        // Add to cart
+        addToCart(product);
+        playPOSSound('success');
+        barcodeScanClass.value = 'scan-success';
+        setTimeout(() => { barcodeScanClass.value = ''; }, 600);
+        barcodeQuery.value = '';
+      } else {
+        // No match found
+        playPOSSound('error');
+        barcodeScanClass.value = 'scan-error';
+        setTimeout(() => { barcodeScanClass.value = ''; }, 600);
+        
+        toastAlert.value = {
+          show: true,
+          title: "SKU Not Found",
+          msg: `No product matched barcode query: "${cleanBarcode}"`,
+          skuName: cleanBarcode,
+          channel: "Barcode Reader"
+        };
+        setTimeout(() => { toastAlert.value.show = false; }, 4000);
+      }
+    };
+
     const cartSubtotal = computed(() => {
       return cart.value.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
     });
@@ -884,6 +960,43 @@ createApp({
       if (isOnline.value) {
         await syncOfflineTransactions();
       }
+
+      // Monitor hardware barcode scanner keyboard emulation
+      let barcodeBuffer = '';
+      let lastKeyTime = Date.now();
+
+      window.addEventListener('keydown', (e) => {
+        // Only run if active tab is POS Terminal
+        if (activeTab.value !== 'pos') return;
+
+        // Skip global buffer if user is explicitly typing in a form input (except our own barcode input)
+        const activeEl = document.activeElement;
+        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'SELECT' || activeEl.tagName === 'TEXTAREA')) {
+          if (!activeEl.classList.contains('barcode-input')) {
+            return;
+          }
+        }
+
+        const currentTime = Date.now();
+        const timeDiff = currentTime - lastKeyTime;
+        lastKeyTime = currentTime;
+
+        // Scanners type extremely rapidly (typical delay < 35ms per character)
+        if (timeDiff < 40) {
+          if (e.key === 'Enter') {
+            if (barcodeBuffer.length > 2) {
+              addSkuByBarcode(barcodeBuffer.trim());
+            }
+            barcodeBuffer = '';
+            e.preventDefault();
+          } else if (e.key.length === 1) {
+            barcodeBuffer += e.key;
+          }
+        } else {
+          // Normal typing speed, reset buffer
+          barcodeBuffer = e.key.length === 1 ? e.key : '';
+        }
+      });
     });
 
     return {
@@ -932,7 +1045,10 @@ createApp({
       showReceiptModal,
       receiptData,
       printReceipt,
-      syncOfflineTransactions
+      syncOfflineTransactions,
+      barcodeQuery,
+      barcodeScanClass,
+      addSkuByBarcode
     };
   }
 }).mount('#app');
