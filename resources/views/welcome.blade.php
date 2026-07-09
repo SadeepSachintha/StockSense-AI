@@ -482,7 +482,19 @@
       </div>
 
       <!-- Panel: POS Terminal -->
-      <div v-else-if="activeTab === 'pos'" class="pos-terminal-grid">
+      <div v-else-if="activeTab === 'pos'">
+        
+        <!-- Offline Warning Banner -->
+        <div v-if="!isOnline" class="offline-banner">
+          <svg style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+            <line x1="1" y1="1" x2="23" y2="23"/>
+            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.5M5 12.5a10.94 10.94 0 0 1 5.83-2.84"/>
+            <path d="M12 18.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+          </svg>
+          <span>Offline Mode Active. Transactions will be cached locally and synced on reconnection.</span>
+        </div>
+
+        <div class="pos-terminal-grid">
         
         <!-- Left Pane: Product Catalog -->
         <div class="card">
@@ -590,6 +602,8 @@
             </button>
           </div>
         </div>
+
+      </div>
 
       </div>
 
@@ -804,6 +818,111 @@
       </div>
       <div class="toast-body">
         @{{ toastAlert.msg }}
+      </div>
+    </div>
+
+    <!-- Receipt Invoice Modal Overlay -->
+    <div class="modal-overlay" v-if="showReceiptModal && receiptData">
+      <div class="receipt-modal">
+        <div style="text-align:center;">
+          <div style="font-size:1.5rem;font-weight:800;font-family:var(--font-display);color:var(--accent-purple);">StockSense AI</div>
+          <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.25rem;">A Product of SS Labz</div>
+          <div v-if="receiptData.isOffline" class="badge danger" style="margin-top:0.5rem;font-size:0.65rem;">Offline Checkout Cash Receipt</div>
+          <div v-else class="badge success" style="margin-top:0.5rem;font-size:0.65rem;">Official Cloud Checkout Invoice</div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <div style="font-size:0.8rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:0.25rem;">
+          <div style="display:flex;justify-content:space-between;">
+            <span>Receipt ID:</span>
+            <span style="color:var(--text-primary);font-weight:600;">@{{ receiptData.id }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>Date & Time:</span>
+            <span style="color:var(--text-primary);">@{{ receiptData.time }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>Tenant Scope:</span>
+            <span style="color:var(--text-primary);font-weight:600;">@{{ receiptData.tenant_id.toUpperCase() }}</span>
+          </div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <!-- Itemized details -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem;max-height:150px;overflow-y:auto;margin:1rem 0;">
+          <div v-for="item in receiptData.items" :key="item.sku" style="display:flex;justify-content:space-between;font-size:0.85rem;">
+            <span>@{{ item.name }} (x@{{ item.quantity }})</span>
+            <strong style="color:var(--text-primary);">$@{{ item.subtotal.toFixed(2) }}</strong>
+          </div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <div style="font-size:0.85rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:0.35rem;">
+          <div style="display:flex;justify-content:space-between;">
+            <span>Subtotal:</span>
+            <span style="color:var(--text-primary);">$@{{ receiptData.subtotal.toFixed(2) }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>Sales Tax (8%):</span>
+            <span style="color:var(--text-primary);">$@{{ receiptData.tax.toFixed(2) }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:1.1rem;color:var(--text-primary);border-top:1px solid rgba(255,255,255,0.05);padding-top:0.5rem;margin-top:0.25rem;">
+            <span>Total Paid:</span>
+            <strong style="color:var(--accent-emerald);">$@{{ receiptData.total.toFixed(2) }}</strong>
+          </div>
+        </div>
+
+        <div style="margin-top:2rem;display:flex;gap:0.75rem;">
+          <button class="btn-secondary" style="flex:1;justify-content:center;padding:0.65rem;" @click="showReceiptModal = false">
+            Close Panel
+          </button>
+          <button class="btn-primary" style="flex:1;justify-content:center;padding:0.65rem;" @click="printReceipt">
+            Print Invoice
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Printable Receipt Layout (Hidden on Screen via CSS) -->
+    <div class="print-only-receipt" v-if="receiptData">
+      <div style="text-align:center;font-weight:bold;font-size:16px;">STOCKSENSE AI</div>
+      <div style="text-align:center;font-size:11px;">A PRODUCT OF SS LABZ</div>
+      <div style="text-align:center;font-size:11px;margin-bottom:15px;">TENANT SCOPE: @{{ receiptData.tenant_id.toUpperCase() }}</div>
+      
+      <div>========================================</div>
+      <div>RECEIPT ID: @{{ receiptData.id }}</div>
+      <div>DATE/TIME : @{{ receiptData.time }}</div>
+      <div v-if="receiptData.isOffline">MODE      : OFFLINE CACHED TRANSACTION</div>
+      <div v-else>MODE      : ONLINE CLOUD APPROVED</div>
+      <div>========================================</div>
+      
+      <div style="margin:10px 0;">
+        <div v-for="item in receiptData.items" :key="item.sku" style="display:flex;justify-content:space-between;">
+          <span>@{{ item.name.toUpperCase() }} x@{{ item.quantity }}</span>
+          <span>$@{{ item.subtotal.toFixed(2) }}</span>
+        </div>
+      </div>
+      
+      <div>========================================</div>
+      <div style="display:flex;justify-content:space-between;">
+        <span>SUBTOTAL</span>
+        <span>$@{{ receiptData.subtotal.toFixed(2) }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span>SALES TAX (8%)</span>
+        <span>$@{{ receiptData.tax.toFixed(2) }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;margin-top:5px;">
+        <span>TOTAL PAID</span>
+        <span>$@{{ receiptData.total.toFixed(2) }}</span>
+      </div>
+      <div>========================================</div>
+      
+      <div style="text-align:center;margin-top:20px;font-size:10px;">
+        THANK YOU FOR YOUR BUSINESS!
       </div>
     </div>
 

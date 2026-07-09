@@ -1106,6 +1106,95 @@ body {
   color: white;
 }
 
+/* Offline & Receipt Print Styles */
+.offline-banner {
+  background: linear-gradient(135deg, var(--accent-rose), #be123c);
+  color: white;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2);
+  animation: flash-opacity 2s infinite ease-in-out;
+}
+
+@keyframes flash-opacity {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(5, 7, 12, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fade-in 0.3s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.receipt-modal {
+  background: #0d121f;
+  border: 1px solid var(--border-glass-hover);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 440px;
+  padding: 2.25rem;
+  box-shadow: var(--shadow-lg), 0 0 40px rgba(139, 92, 246, 0.1);
+  color: var(--text-primary);
+}
+
+.receipt-divider {
+  border-top: 1px dashed var(--border-glass);
+  margin: 1.25rem 0;
+}
+
+.print-only-receipt {
+  display: none;
+}
+
+/* Print Stylesheet Adjustments */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .print-only-receipt, .print-only-receipt * {
+    visibility: visible !important;
+    display: block !important;
+  }
+  .print-only-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    color: #000000 !important;
+    background: #ffffff !important;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    line-height: 1.4;
+    padding: 1.5in 0.5in 0.5in 0.5in;
+  }
+  .app-container, .modal-overlay, .restock-alert-simulation-toast {
+    display: none !important;
+  }
+}
+
 /* responsive adjustments */
 @media(max-width: 1200px) {
   .kpi-grid {

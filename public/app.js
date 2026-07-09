@@ -13,6 +13,9 @@ createApp({
     const newTenant = ref({ id: '', name: '', company_name: '', subscription_tier: 'free' });
     
     // Core KPIs
+    const isOnline = ref(navigator.onLine);
+    const showReceiptModal = ref(false);
+    const receiptData = ref(null);
     const savedCapital = ref(12450);
     const stockoutRisks = ref(0);
     const wmapeAvg = ref(3.8);
@@ -581,10 +584,18 @@ createApp({
 
     const submitCheckout = async () => {
       if (cart.value.length === 0) return;
-      
-      systemStatus.value = "Processing checkout...";
-      systemStatusClass.value = "warning";
-      
+
+      const subtotalVal = cartSubtotal.value;
+      const taxVal = cartTax.value;
+      const totalVal = cartTotal.value;
+      const checkoutItems = cart.value.map(item => ({
+        name: item.product.name,
+        sku: item.product.sku,
+        quantity: item.quantity,
+        price: item.product.price,
+        subtotal: item.product.price * item.quantity
+      }));
+
       const payload = {
         transactions: cart.value.map(item => ({
           sku: item.product.sku,
@@ -593,6 +604,52 @@ createApp({
           transaction_date: new Date().toISOString().slice(0, 19).replace('T', ' ')
         }))
       };
+
+      // Construct Receipt details
+      const receipt = {
+        id: 'TX-' + Math.floor(100000 + Math.random() * 900000),
+        time: new Date().toLocaleString(),
+        tenant_id: activeTenantId.value,
+        items: checkoutItems,
+        subtotal: subtotalVal,
+        tax: taxVal,
+        total: totalVal,
+        isOffline: !isOnline.value
+      };
+
+      if (!isOnline.value) {
+        // Offline Flow: Cache transaction in LocalStorage
+        const cached = JSON.parse(localStorage.getItem('offline_transactions') || '[]');
+        cached.push(payload);
+        localStorage.setItem('offline_transactions', JSON.stringify(cached));
+
+        // Deduct inventory levels reactively in the UI
+        cart.value.forEach(item => {
+          const product = skus.value.find(s => s.sku === item.product.sku);
+          if (product) {
+            product.currentStock = Math.max(0, product.currentStock - item.quantity);
+          }
+        });
+
+        // Clear cart
+        cart.value = [];
+        receiptData.value = receipt;
+        showReceiptModal.value = true;
+
+        toastAlert.value = {
+          show: true,
+          title: "Offline Transaction Cached",
+          msg: "Order cached locally. Inventory levels updated. Will sync when back online.",
+          skuName: "Offline Cache",
+          channel: "Local Storage"
+        };
+        setTimeout(() => { toastAlert.value.show = false; }, 5000);
+        return;
+      }
+
+      // Online Flow
+      systemStatus.value = "Processing checkout...";
+      systemStatusClass.value = "warning";
 
       try {
         const res = await fetch(`/api/products/ingest?tenant_id=${activeTenantId.value}`, {
@@ -609,6 +666,10 @@ createApp({
           // Clear cart
           cart.value = [];
           
+          // Populate receipt & show modal
+          receiptData.value = receipt;
+          showReceiptModal.value = true;
+
           // Toast Notification
           toastAlert.value = {
             show: true,
@@ -617,10 +678,9 @@ createApp({
             skuName: "POS Checkout",
             channel: "POS Terminal"
           };
-          
           setTimeout(() => { toastAlert.value.show = false; }, 4000);
           
-          // Reload products list to reflect new stocks and update alerts
+          // Reload products list
           await fetchLiveProducts();
         } else {
           alert("Checkout failed: " + data.message);
@@ -629,9 +689,31 @@ createApp({
         }
       } catch (err) {
         console.error("Checkout error:", err);
-        alert("Server communication error.");
-        systemStatus.value = "SaaS offline.";
-        systemStatusClass.value = "danger";
+        // Fallback to offline caching if connection fails mid-operation!
+        const cached = JSON.parse(localStorage.getItem('offline_transactions') || '[]');
+        cached.push(payload);
+        localStorage.setItem('offline_transactions', JSON.stringify(cached));
+
+        // Deduct inventory levels reactively in the UI
+        cart.value.forEach(item => {
+          const product = skus.value.find(s => s.sku === item.product.sku);
+          if (product) {
+            product.currentStock = Math.max(0, product.currentStock - item.quantity);
+          }
+        });
+
+        cart.value = [];
+        receiptData.value = receipt;
+        showReceiptModal.value = true;
+
+        toastAlert.value = {
+          show: true,
+          title: "Server Error - Cached",
+          msg: "Server connection failed. Order cached locally and will auto-sync on recovery.",
+          skuName: "Offline Cache",
+          channel: "Local Storage"
+        };
+        setTimeout(() => { toastAlert.value.show = false; }, 6000);
       }
     };
 
@@ -731,8 +813,77 @@ createApp({
       await fetchLiveProducts();
     };
 
+    const printReceipt = () => {
+      window.print();
+    };
+
+    const syncOfflineTransactions = async () => {
+      const cached = JSON.parse(localStorage.getItem('offline_transactions') || '[]');
+      if (cached.length === 0) return;
+      
+      systemStatus.value = `Syncing ${cached.length} offline orders...`;
+      systemStatusClass.value = "warning";
+      
+      let successCount = 0;
+      
+      // Ingest all cached batches
+      for (const payload of cached) {
+        try {
+          const res = await fetch(`/api/products/ingest?tenant_id=${activeTenantId.value}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Tenant-ID': activeTenantId.value
+            },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (data.status === 'success') {
+            successCount += data.ingested_count;
+          }
+        } catch (err) {
+          console.error("Offline sync item failed:", err);
+        }
+      }
+      
+      // Clear cache
+      localStorage.removeItem('offline_transactions');
+      
+      // Show toast
+      toastAlert.value = {
+        show: true,
+        title: "Data Synced",
+        msg: `Synchronized ${successCount} offline transaction(s) to Neon cloud.`,
+        skuName: "Auto-Sync",
+        channel: "Database Gateway"
+      };
+      setTimeout(() => { toastAlert.value.show = false; }, 5000);
+      
+      // Refresh products list
+      await fetchLiveProducts();
+    };
+
     onMounted(async () => {
       await fetchLiveProducts();
+
+      // Monitor network online/offline transitions
+      window.addEventListener('online', async () => {
+        isOnline.value = true;
+        systemStatus.value = "Back online. Syncing database...";
+        systemStatusClass.value = "warning";
+        await syncOfflineTransactions();
+      });
+
+      window.addEventListener('offline', () => {
+        isOnline.value = false;
+        systemStatus.value = "Offline Mode Active";
+        systemStatusClass.value = "warning";
+      });
+
+      // Try syncing any cached orders on boot if online
+      if (isOnline.value) {
+        await syncOfflineTransactions();
+      }
     });
 
     return {
@@ -776,7 +927,12 @@ createApp({
       registerNewTenant,
       toggleTenantStatus,
       changeTenantTier,
-      switchTenantContext
+      switchTenantContext,
+      isOnline,
+      showReceiptModal,
+      receiptData,
+      printReceipt,
+      syncOfflineTransactions
     };
   }
 }).mount('#app');
