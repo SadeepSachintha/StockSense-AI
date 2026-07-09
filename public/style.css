@@ -1182,7 +1182,8 @@ body {
   }
 
   /* Hide the rest of the application layout elements */
-  .app-container,
+  .sidebar,
+  main,
   .modal-overlay,
   .restock-alert-simulation-toast {
     display: none !important;
