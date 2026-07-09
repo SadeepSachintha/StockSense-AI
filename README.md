@@ -195,7 +195,7 @@ StockSense AI is built around modern software engineering, data, and ML engineer
 
 ## 8. Advanced Platform Upgrades
 
-Recently, StockSense AI underwent four core enterprise production upgrades:
+Recently, StockSense AI underwent five core enterprise production upgrades:
 
 ### A. POS Offline Resiliency & Print Receipts
 - **Client-Side Storage Caching:** Integrated connection monitoring (`navigator.onLine`). If network connectivity drops, POS checkouts are cached in `localStorage` and automatically synchronized to the cloud on recovery.
@@ -216,6 +216,7 @@ Recently, StockSense AI underwent four core enterprise production upgrades:
 - **Algorithm Comparison Graph:** Plots LightGBM, Prophet (seasonal Fourier), and LSTM (deep learning recurrent) forecasting lines on Chart.js simultaneously. The selected active model is highlighted bold while overlay models display transparently.
 - **MLOps Drift Autorecovery Panel:** Allows setting a drift tolerance threshold. If simulated model drift exceeds this limit, the system automatically triggers the retrain DAG, streams logs, and reduces drift back to a 0.8% baseline.
 
-### E. Interactive Product Catalog Management
-- **Add Product UI Modal:** Added a popup form to add new products/SKUs to the catalog directly from the POS interface. Managers can easily configure product names, custom SKU keys, base pricing, initial inventory levels, safety threshold levels, reorder quantities, and supplier associations.
-- **RESTful Endpoint Integration:** Programmed a secure backend POST handler under `/api/products` mapping to [ProductForecastController.php](file:///d:/xampp/htdocs/StockSense%20AI/app/Http/Controllers/ProductForecastController.php) to seed new items cleanly in the Neon PostgreSQL database.
+### E. Interactive Product Catalog & Batch List Management
+- **Add Product UI Modal:** Added a popup form to add new products/SKUs to the catalog directly from the POS interface. Supports tab-switching between a Single SKU Form and an interactive Batch List Table.
+- **Batch Row Controls:** Allows cashiers to click **`Add Product Row`** to add infinite SKU configurations in a spreadsheet-like grid and delete rows with inline trash icons.
+- **Transactional RESTful API:** Programmed a secure backend POST handler under `/api/products` mapping to [ProductForecastController.php](file:///d:/xampp/htdocs/StockSense%20AI/app/Http/Controllers/ProductForecastController.php) to seed single items or lists. Wrapped list creation in a database transaction (`DB::beginTransaction()`) to guarantee atomic entries.
