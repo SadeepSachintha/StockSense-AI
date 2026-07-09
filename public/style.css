@@ -1171,6 +1171,16 @@ body {
 
 /* Print Stylesheet Adjustments */
 @media print {
+  /* Flatten SPA flex layouts, remove height restrictions and overflow clipping */
+  html, body, #app {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
   /* Hide the rest of the application layout elements */
   .app-container,
   .modal-overlay,
