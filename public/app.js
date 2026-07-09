@@ -548,9 +548,28 @@ window.vm = createApp({
       }, 4000);
 
       // Simulate Supplier Confirmation
-      setTimeout(() => {
+      setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/products/${sku.id}/replenish`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ quantity: sku.reorderQty })
+          });
+          const data = await res.json();
+          if (data.status === 'success') {
+            sku.currentStock = parseInt(data.data.current_stock);
+          } else {
+            sku.currentStock += sku.reorderQty;
+          }
+        } catch (err) {
+          console.error("Error persisting restock quantity:", err);
+          sku.currentStock += sku.reorderQty;
+        }
+
         sku.restockStatus = 'Confirmed';
-        sku.currentStock += sku.reorderQty; // Replenish stock
         
         const alertIdx = supplierAlerts.value.findIndex(a => a.skuName === sku.name && a.status === 'Dispatched');
         if (alertIdx !== -1) {

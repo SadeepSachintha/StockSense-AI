@@ -173,4 +173,24 @@ class ProductForecastController extends Controller
             'data' => $product->load('supplier')
         ], 201);
     }
+
+    /**
+     * Replenish/Restock an existing product.
+     */
+    public function replenish(Request $request, string $id): JsonResponse
+    {
+        $product = Product::findOrFail($id);
+
+        $validated = $request->validate([
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $product->increment('current_stock', $validated['quantity']);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Product stock replenished successfully.',
+            'data' => $product->load('supplier')
+        ]);
+    }
 }

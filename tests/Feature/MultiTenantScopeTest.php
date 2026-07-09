@@ -155,4 +155,39 @@ class MultiTenantScopeTest extends TestCase
         $this->tenantManager->setTenantId('tenant_a');
         $this->assertCount(2, Product::all());
     }
+
+    /** @test */
+    public function it_can_replenish_product_stock(): void
+    {
+        $tenant = Tenant::create([
+            'id' => 'tenant_a',
+            'name' => 'Tenant A Retailers',
+            'subscription_tier' => 'basic',
+            'status' => 'active'
+        ]);
+
+        $this->tenantManager->setTenantId('tenant_a');
+        $product = Product::create([
+            'sku' => 'SKU-REPL-1',
+            'name' => 'Replenish Test Product',
+            'category' => 'Grains',
+            'price' => 5.00,
+            'current_stock' => 10,
+            'safety_stock' => 5,
+            'max_stock' => 100,
+            'reorder_qty' => 30,
+            'lead_time_days' => 4
+        ]);
+
+        $response = $this->withSession(['tenant_id' => 'tenant_a'])
+            ->putJson("/api/products/{$product->id}/replenish", [
+                'quantity' => 40
+            ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['status' => 'success']);
+
+        $product->refresh();
+        $this->assertEquals(50, $product->current_stock);
+    }
 }
