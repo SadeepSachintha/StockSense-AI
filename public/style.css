@@ -1171,14 +1171,16 @@ body {
 
 /* Print Stylesheet Adjustments */
 @media print {
-  body * {
-    visibility: hidden !important;
+  /* Hide the rest of the application layout elements */
+  .app-container,
+  .modal-overlay,
+  .restock-alert-simulation-toast {
+    display: none !important;
   }
-  .print-only-receipt, .print-only-receipt * {
-    visibility: visible !important;
-    display: block !important;
-  }
+  
+  /* Force receipt element to display at the top-left */
   .print-only-receipt {
+    display: block !important;
     position: absolute;
     left: 0;
     top: 0;
@@ -1188,10 +1190,8 @@ body {
     font-family: 'Courier New', Courier, monospace;
     font-size: 13px;
     line-height: 1.4;
-    padding: 1.5in 0.5in 0.5in 0.5in;
-  }
-  .app-container, .modal-overlay, .restock-alert-simulation-toast {
-    display: none !important;
+    padding: 0.5in;
+    margin: 0;
   }
 }
 
