@@ -1307,6 +1307,68 @@ body {
   }
 }
 
+/* Barcode Suggestions Dropdown */
+.barcode-suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #0f172a;
+  border: 1px solid var(--border-glass-hover);
+  border-radius: var(--radius-sm);
+  margin-top: 0.5rem;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: var(--shadow-lg), 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  padding: 0.5rem 0;
+}
+
+.barcode-suggestion-item {
+  padding: 0.65rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.barcode-suggestion-item:hover,
+.barcode-suggestion-item.active {
+  background: rgba(139, 92, 246, 0.18);
+}
+
+.suggestion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  text-align: left;
+}
+
+.suggestion-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.suggestion-sku {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+.suggestion-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.suggestion-price {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-emerald);
+}
+
 /* responsive adjustments */
 @media(max-width: 1200px) {
   .kpi-grid {

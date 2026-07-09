@@ -18,6 +18,8 @@ createApp({
     const receiptData = ref(null);
     const barcodeQuery = ref('');
     const barcodeScanClass = ref('');
+    const showBarcodeSuggestions = ref(false);
+    const activeSuggestionIndex = ref(-1);
     const savedCapital = ref(12450);
     const stockoutRisks = ref(0);
     const wmapeAvg = ref(3.8);
@@ -646,6 +648,45 @@ createApp({
       }
     };
 
+    const barcodeSuggestions = computed(() => {
+      const query = barcodeQuery.value.trim().toLowerCase();
+      if (!query) {
+        // Suggest top 5 in-stock products if search query is empty
+        return skus.value.filter(s => s.currentStock > 0).slice(0, 5);
+      }
+      return skus.value.filter(s => 
+        s.sku.toLowerCase().includes(query) || 
+        s.name.toLowerCase().includes(query)
+      ).slice(0, 8);
+    });
+
+    const moveSuggestionActive = (direction) => {
+      const suggestions = barcodeSuggestions.value;
+      if (suggestions.length === 0) return;
+      activeSuggestionIndex.value = (activeSuggestionIndex.value + direction + suggestions.length) % suggestions.length;
+      
+      // Keep active element in visible viewport
+      setTimeout(() => {
+        const el = document.querySelector('.barcode-suggestion-item.active');
+        if (el) {
+          el.scrollIntoView({ block: 'nearest' });
+        }
+      }, 10);
+    };
+
+    const selectActiveSuggestion = () => {
+      const index = activeSuggestionIndex.value;
+      const suggestions = barcodeSuggestions.value;
+      if (index >= 0 && index < suggestions.length) {
+        addSkuByBarcode(suggestions[index].sku);
+      } else {
+        // Fallback to searching typed input directly
+        addSkuByBarcode(barcodeQuery.value);
+      }
+      activeSuggestionIndex.value = -1;
+      showBarcodeSuggestions.value = false;
+    };
+
     const cartSubtotal = computed(() => {
       return cart.value.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
     });
@@ -997,6 +1038,14 @@ createApp({
           barcodeBuffer = e.key.length === 1 ? e.key : '';
         }
       });
+
+      // Handle click outside suggestions dropdown to close it
+      window.addEventListener('click', (e) => {
+        const inputContainer = document.querySelector('.barcode-scanner-container');
+        if (inputContainer && !inputContainer.contains(e.target)) {
+          showBarcodeSuggestions.value = false;
+        }
+      });
     });
 
     return {
@@ -1048,7 +1097,12 @@ createApp({
       syncOfflineTransactions,
       barcodeQuery,
       barcodeScanClass,
-      addSkuByBarcode
+      addSkuByBarcode,
+      barcodeSuggestions,
+      showBarcodeSuggestions,
+      activeSuggestionIndex,
+      moveSuggestionActive,
+      selectActiveSuggestion
     };
   }
 }).mount('#app');

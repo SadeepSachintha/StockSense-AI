@@ -506,8 +506,34 @@
               :class="barcodeScanClass"
               placeholder="Scan item barcode or type SKU (e.g. SKU-RICE-001) & press Enter..." 
               v-model="barcodeQuery"
-              @keydown.enter="addSkuByBarcode(barcodeQuery)"
+              @focus="showBarcodeSuggestions = true"
+              @keydown.down.prevent="moveSuggestionActive(1)"
+              @keydown.up.prevent="moveSuggestionActive(-1)"
+              @keydown.enter.prevent="selectActiveSuggestion"
             >
+            
+            <!-- Smart Suggestions Dropdown -->
+            <div class="barcode-suggestions-dropdown" v-if="showBarcodeSuggestions && barcodeSuggestions.length > 0">
+              <div 
+                v-for="(product, idx) in barcodeSuggestions" 
+                :key="product.id"
+                class="barcode-suggestion-item"
+                :class="{ active: idx === activeSuggestionIndex }"
+                @click="addSkuByBarcode(product.sku); showBarcodeSuggestions = false;"
+                @mouseenter="activeSuggestionIndex = idx"
+              >
+                <div class="suggestion-info">
+                  <span class="suggestion-name">@{{ product.name }}</span>
+                  <span class="suggestion-sku">SKU: @{{ product.sku }}</span>
+                </div>
+                <div class="suggestion-meta">
+                  <span class="badge" :class="product.currentStock > 10 ? 'success' : 'warning'" style="font-size: 0.65rem; padding: 0.1rem 0.35rem; border-radius: 4px;">
+                    @{{ product.currentStock }} in stock
+                  </span>
+                  <span class="suggestion-price">$@{{ product.price.toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="scanner-badge">
             <div class="scanner-pulse"></div>
