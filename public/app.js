@@ -163,6 +163,15 @@ window.vm = createApp({
       const sku = selectedSku.value;
       if (!sku || !sku.salesHistory || !sku.forecast) return;
 
+      if (forecastChart && (!forecastChart.ctx || !document.body.contains(forecastChart.ctx.canvas))) {
+        try {
+          forecastChart.destroy();
+        } catch (e) {
+          console.warn("Error destroying chart instance:", e);
+        }
+        forecastChart = null;
+      }
+
       const labels = generateChartLabels();
       
       const salesHistoryDataset = [...sku.salesHistory, ...Array(14).fill(null)];
