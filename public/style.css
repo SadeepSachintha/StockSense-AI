@@ -1178,20 +1178,24 @@ body {
     display: none !important;
   }
   
-  /* Force receipt element to display at the top-left */
+  /* Force receipt element to display as a standard block at the top */
   .print-only-receipt {
     display: block !important;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+    width: 100% !important;
     color: #000000 !important;
     background: #ffffff !important;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 13px;
-    line-height: 1.4;
-    padding: 0.5in;
-    margin: 0;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+    padding: 0.5in !important;
+    margin: 0 !important;
+  }
+
+  /* Force all nested children inside the printable invoice to render black */
+  .print-only-receipt,
+  .print-only-receipt * {
+    color: #000000 !important;
+    background: transparent !important;
   }
 }
 
