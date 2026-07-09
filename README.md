@@ -217,7 +217,8 @@ Recently, StockSense AI underwent five core enterprise production upgrades:
 - **Algorithm Comparison Graph:** Plots LightGBM, Prophet (seasonal Fourier), and LSTM (deep learning recurrent) forecasting lines on Chart.js simultaneously. The selected active model is highlighted bold while overlay models display transparently.
 - **MLOps Drift Autorecovery Panel:** Allows setting a drift tolerance threshold. If simulated model drift exceeds this limit, the system automatically triggers the retrain DAG, streams logs, and reduces drift back to a 0.8% baseline.
 
-### E. Interactive Product Catalog & Batch List Management
+### E. Interactive Product Catalog, CSV Imports & Batch List Management
 - **Add Product UI Modal:** Added a popup form to add new products/SKUs to the catalog directly from the POS interface. Supports tab-switching between a Single SKU Form and an interactive Batch List Table.
+- **Bulk CSV Parser & Template Downloader:** Integrates a client-side CSV template downloader and a FileReader-based file parser. Users can download a spreadsheet template, fill it with store items, and upload it to pre-fill the batch table instantly.
 - **Batch Row Controls:** Allows cashiers to click **`Add Product Row`** to add infinite SKU configurations in a spreadsheet-like grid and delete rows with inline trash icons.
 - **Transactional RESTful API:** Programmed a secure backend POST handler under `/api/products` mapping to [ProductForecastController.php](file:///d:/xampp/htdocs/StockSense%20AI/app/Http/Controllers/ProductForecastController.php) to seed single items or lists. Wrapped list creation in a database transaction (`DB::beginTransaction()`) to guarantee atomic entries.

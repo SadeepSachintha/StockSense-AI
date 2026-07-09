@@ -1018,6 +1018,95 @@ window.vm = createApp({
       }
     };
 
+    const downloadCSVTemplate = () => {
+      const headers = [
+        'Product Name',
+        'SKU Code',
+        'Category',
+        'Price ($)',
+        'Stock',
+        'Safety Stock',
+        'Max Capacity',
+        'Reorder Qty',
+        'Lead Time (Days)',
+        'Supplier ID (1=AgriBulk, 2=GrownOrganic, 3=Veggie)'
+      ].join(',');
+
+      const rows = [
+        ['Organic Fuji Apples', 'APPL-FUJ-001', 'Fruits', '2.49', '150', '30', '400', '80', '5', '2'],
+        ['Fresh Baby Spinach', 'SPIN-BAB-002', 'Vegetables', '3.99', '80', '15', '250', '50', '3', '3'],
+        ['Whole Wheat Oats', 'OATS-WHL-003', 'Grains', '4.89', '200', '40', '500', '100', '7', '1']
+      ].map(r => r.join(',')).join('\n');
+
+      const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(headers + '\n' + rows);
+      const link = document.createElement('a');
+      link.setAttribute('href', csvContent);
+      link.setAttribute('download', 'stocksense_sku_import_template.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    const handleCSVUpload = (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target.result;
+          const lines = content.split(/\r?\n/);
+          if (lines.length <= 1) {
+            alert("The uploaded CSV file is empty.");
+            return;
+          }
+
+          const parsedList = [];
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            const cols = line.split(',').map(c => c.replace(/^["']|["']$/g, '').trim());
+            if (cols.length < 2) continue;
+
+            parsedList.push({
+              name: cols[0] || '',
+              sku: cols[1] || '',
+              category: cols[2] || '',
+              price: parseFloat(cols[3]) || 9.99,
+              current_stock: parseInt(cols[4]) || 50,
+              safety_stock: parseInt(cols[5]) || 15,
+              max_stock: parseInt(cols[6]) || 120,
+              reorder_qty: cols[7] ? parseInt(cols[7]) : 40,
+              lead_time_days: cols[8] ? parseInt(cols[8]) : 3,
+              supplier_id: cols[9] || '1'
+            });
+          }
+
+          if (parsedList.length > 0) {
+            batchProductList.value = parsedList;
+            
+            toastAlert.value = {
+              show: true,
+              title: "CSV File Parsed",
+              msg: `Successfully imported ${parsedList.length} products into the batch table list. Review and submit!`,
+              skuName: file.name,
+              channel: "CSV Parser Engine"
+            };
+            setTimeout(() => { toastAlert.value.show = false; }, 5000);
+          } else {
+            alert("No valid product rows were found in the uploaded file.");
+          }
+        } catch (err) {
+          console.error("Error parsing CSV upload:", err);
+          alert("Error parsing CSV. Please check formatting.");
+        }
+      };
+
+      reader.readAsText(file);
+      event.target.value = '';
+    };
+
     // Tenants management actions
     const fetchTenants = async () => {
       try {
@@ -1348,7 +1437,9 @@ window.vm = createApp({
       discountValue,
       discountAmount,
       activeTenantTaxRate,
-      changeTenantTaxRate
+      changeTenantTaxRate,
+      downloadCSVTemplate,
+      handleCSVUpload
     };
   }
 }).mount('#app');

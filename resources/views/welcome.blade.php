@@ -1115,6 +1115,48 @@
 
         <!-- Tab B: Batch List Table -->
         <form @submit.prevent="submitNewProductBatch" v-else-if="addProductTab === 'batch'">
+          
+          <!-- Bulk Import CSV Tools -->
+          <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;gap:1rem;">
+            <div style="font-size:0.75rem;color:var(--text-secondary);text-align:left;">
+              <strong style="color:var(--accent-purple);display:block;margin-bottom:0.15rem;">Bulk Product Importer</strong>
+              Upload a standard CSV file to pre-fill the catalog table before registering them.
+            </div>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              <button 
+                type="button" 
+                class="btn-secondary" 
+                style="padding:0.45rem 0.75rem;font-size:0.75rem;border:1px solid rgba(255,255,255,0.08);display:inline-flex;align-items:center;gap:0.35rem;"
+                @click="downloadCSVTemplate"
+              >
+                <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download Template
+              </button>
+              
+              <label 
+                class="btn-primary" 
+                style="padding:0.45rem 0.75rem;font-size:0.75rem;cursor:pointer;background:var(--gradient-purple);border:none;display:inline-flex;align-items:center;gap:0.35rem;"
+              >
+                <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Upload CSV File
+                <input 
+                  type="file" 
+                  accept=".csv" 
+                  style="display:none;" 
+                  @change="handleCSVUpload"
+                >
+              </label>
+            </div>
+          </div>
+
           <div class="data-table-container" style="max-height: 380px; overflow-y: auto; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;">
             <table class="data-table">
               <thead>
