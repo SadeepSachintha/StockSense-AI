@@ -178,6 +178,7 @@ In the production cloud instance, the default Laravel welcome screen has been re
   * `GET /api/products/{id}/forecast` dispatches live inputs to the FastAPI regressor to map forecasting matrices and recalculate safety margins.
   * **POS Checkout Terminal:** Exposes a full transactional cash register tab in the sidebar navigation. Cashiers can browse products, manage a cart with real-time tax/total adjustments, and checkout to write live transaction records and deduct inventory on the fly.
   * **POS Ingestion Simulation:** Clicking the CSV uploader fires a live POST query to `/api/products/ingest`, writing sales transactions to PostgreSQL in real-time and raising stockout alerts if safety thresholds are violated.
+  * **Tenant CRUD Administration:** Exposes a secure RESTful API endpoint mapping (`/api/tenants`) to list, register, view, update, or terminate customer tenant subscription profiles (free, basic, premium) in the Neon cloud database.
 
 ---
 
