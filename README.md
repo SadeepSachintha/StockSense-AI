@@ -190,3 +190,27 @@ StockSense AI is built around modern software engineering, data, and ML engineer
 * **Separation of Concerns (Microservices):** Decouples inventory management (Laravel 12) from mathematical forecast prediction calculations (Python FastAPI).
 * **Enterprise MLOps Orchestration:** Runs automated Apache Airflow retraining loops incorporating Great Expectations (schema check), Parquet file compaction, MLflow tracking, and drift observables.
 * **Protocol-Agnostic Assets:** Employs relative URL path bindings for static CSS and JS modules to bypass Mixed Content blocks behind reverse proxies.
+
+---
+
+## 8. Advanced Platform Upgrades
+
+Recently, StockSense AI underwent four core enterprise production upgrades:
+
+### A. POS Offline Resiliency & Print Receipts
+- **Client-Side Storage Caching:** Integrated connection monitoring (`navigator.onLine`). If network connectivity drops, POS checkouts are cached in `localStorage` and automatically synchronized to the cloud on recovery.
+- **Synthesized Audio Engine:** Built a Web Audio API sound generator playing high-fidelity cashier beeps for successful scans and buzzer alerts for offline/connection errors.
+- **Printer-Friendly Receipts (`@media print`):** Flat CSS page resets block height constraints to render clean thermal cash receipts in print preview.
+
+### B. Smart SKU Suggestions & Autocomplete
+- **Real-Time SKU Lookup:** Displays a suggestions list matching SKU codes or names as user types in the POS search bar.
+- **Zero-State Fallback:** Clicking the empty input displays the top 5 in-stock products for rapid selection.
+- **Keyboard-Only Terminal Navigation:** Managers can navigate selections with arrow keys and hit `Enter` to checkout entirely mouse-free.
+
+### C. SaaS Admin Control Panel Separation
+- **Dedicated Route Isolation:** Moved tenant registration, subscription levels, and context switcher database scopes out of cashier layouts into a secure `/saas-admin` URL route.
+- **Bilateral Workspace Links:** Included quick links to switch between cashier and admin terminals in the sidebar footer.
+
+### D. Multi-Model Forecast Overlays & Drift Autorecovery
+- **Algorithm Comparison Graph:** Plots LightGBM, Prophet (seasonal Fourier), and LSTM (deep learning recurrent) forecasting lines on Chart.js simultaneously. The selected active model is highlighted bold while overlay models display transparently.
+- **MLOps Drift Autorecovery Panel:** Allows setting a drift tolerance threshold. If simulated model drift exceeds this limit, the system automatically triggers the retrain DAG, streams logs, and reduces drift back to a 0.8% baseline.
