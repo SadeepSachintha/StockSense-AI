@@ -957,6 +957,8 @@
       <div style="text-align:center;margin-top:20px;font-size:10px;">
         THANK YOU FOR YOUR BUSINESS!
       </div>
+    </div>
+
     <!-- Add Product Modal Overlay -->
     <div class="modal-overlay" v-if="showAddProductModal">
       <div class="receipt-modal" :style="addProductTab === 'batch' ? 'max-width: 95%; width: 1100px; padding: 2rem;' : 'max-width: 500px; padding: 2.25rem;'">
