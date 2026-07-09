@@ -1036,9 +1036,26 @@ window.vm = createApp({
       }
     };
 
+    const combinedCatalogSuggestions = computed(() => {
+      const existing = skus.value.map(s => ({
+        name: s.name,
+        sku: s.sku,
+        category: s.category,
+        price: s.price,
+        safety_stock: s.safetyStock,
+        max_stock: s.maxStock,
+        reorder_qty: s.reorderQty,
+        lead_time_days: s.leadTime,
+        supplier_id: suppliersList.value.find(sup => sup.name === s.supplier)?.id || ''
+      }));
+
+      const uniqueTemplates = productTemplates.filter(t => !existing.some(e => e.name.toLowerCase() === t.name.toLowerCase()));
+      return [...existing, ...uniqueTemplates];
+    });
+
     const handleSingleNameInput = () => {
       const q = (newProductData.value.name || '').trim().toLowerCase();
-      const matched = productTemplates.find(t => t.name.toLowerCase() === q);
+      const matched = combinedCatalogSuggestions.value.find(t => t.name.toLowerCase() === q);
       if (matched) {
         selectSingleTemplate(matched);
       }
@@ -1058,7 +1075,7 @@ window.vm = createApp({
 
     const handleBatchNameInput = (prod, index) => {
       const q = (prod.name || '').trim().toLowerCase();
-      const matched = productTemplates.find(t => t.name.toLowerCase() === q);
+      const matched = combinedCatalogSuggestions.value.find(t => t.name.toLowerCase() === q);
       if (matched) {
         selectBatchTemplate(index, matched);
       }
@@ -1651,7 +1668,8 @@ window.vm = createApp({
       submitNewSupplier,
       productTemplates,
       handleSingleNameInput,
-      handleBatchNameInput
+      handleBatchNameInput,
+      combinedCatalogSuggestions
     };
   }
 }).mount('#app');

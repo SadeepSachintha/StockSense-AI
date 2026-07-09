@@ -1059,7 +1059,7 @@
                 required
               >
               <datalist id="single-product-tpls">
-                <option v-for="tpl in productTemplates" :key="tpl.sku" :value="tpl.name">@{{ tpl.category }}</option>
+                <option v-for="tpl in combinedCatalogSuggestions" :key="tpl.sku" :value="tpl.name">@{{ tpl.sku }} - @{{ tpl.category }}</option>
               </datalist>
             </div>
             <div>
@@ -1251,7 +1251,7 @@
           </div>
 
           <datalist id="batch-product-tpls">
-            <option v-for="tpl in productTemplates" :key="tpl.sku" :value="tpl.name">@{{ tpl.category }}</option>
+            <option v-for="tpl in combinedCatalogSuggestions" :key="tpl.sku" :value="tpl.name">@{{ tpl.sku }} - @{{ tpl.category }}</option>
           </datalist>
 
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
