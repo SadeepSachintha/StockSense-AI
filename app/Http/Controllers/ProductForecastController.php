@@ -99,11 +99,13 @@ class ProductForecastController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $tenantId = session('tenant_id') ?? $request->header('X-Tenant-ID') ?? 'tenant_001';
+
         // Check if bulk array is provided
         if ($request->has('products') && is_array($request->input('products'))) {
             $validated = $request->validate([
                 'products' => 'required|array|min:1',
-                'products.*.sku' => 'required|string|unique:products,sku',
+                'products.*.sku' => 'required|string',
                 'products.*.name' => 'required|string',
                 'products.*.category' => 'required|string',
                 'products.*.price' => 'required|numeric|min:0.01',
@@ -117,7 +119,6 @@ class ProductForecastController extends Controller
             ]);
 
             $created = [];
-            $tenantId = session('tenant_id') ?? $request->header('X-Tenant-ID') ?? 'tenant_001';
 
             DB::beginTransaction();
             try {
@@ -126,8 +127,27 @@ class ProductForecastController extends Controller
                         $prod['elasticity'] = -1.2;
                     }
                     $prod['tenant_id'] = $tenantId;
-                    $product = Product::create($prod);
-                    $created[] = $product->load('supplier');
+
+                    // Query existing product by SKU inside tenant scope
+                    $existing = Product::where('sku', $prod['sku'])->first();
+                    if ($existing) {
+                        $existing->increment('current_stock', $prod['current_stock']);
+                        $existing->update([
+                            'name' => $prod['name'],
+                            'category' => $prod['category'],
+                            'price' => $prod['price'],
+                            'safety_stock' => $prod['safety_stock'],
+                            'max_stock' => $prod['max_stock'],
+                            'reorder_qty' => $prod['reorder_qty'],
+                            'lead_time_days' => $prod['lead_time_days'],
+                            'supplier_id' => $prod['supplier_id'],
+                            'elasticity' => $prod['elasticity']
+                        ]);
+                        $created[] = $existing->load('supplier');
+                    } else {
+                        $product = Product::create($prod);
+                        $created[] = $product->load('supplier');
+                    }
                 }
                 DB::commit();
             } catch (\Exception $e) {
@@ -147,7 +167,7 @@ class ProductForecastController extends Controller
 
         // Single product logic
         $validated = $request->validate([
-            'sku' => 'required|string|unique:products,sku',
+            'sku' => 'required|string',
             'name' => 'required|string',
             'category' => 'required|string',
             'price' => 'required|numeric|min:0.01',
@@ -164,7 +184,31 @@ class ProductForecastController extends Controller
             $validated['elasticity'] = -1.2;
         }
 
-        $validated['tenant_id'] = session('tenant_id') ?? $request->header('X-Tenant-ID') ?? 'tenant_001';
+        $validated['tenant_id'] = $tenantId;
+
+        // Query existing product by SKU inside tenant scope
+        $existing = Product::where('sku', $validated['sku'])->first();
+        if ($existing) {
+            $existing->increment('current_stock', $validated['current_stock']);
+            $existing->update([
+                'name' => $validated['name'],
+                'category' => $validated['category'],
+                'price' => $validated['price'],
+                'safety_stock' => $validated['safety_stock'],
+                'max_stock' => $validated['max_stock'],
+                'reorder_qty' => $validated['reorder_qty'],
+                'lead_time_days' => $validated['lead_time_days'],
+                'supplier_id' => $validated['supplier_id'],
+                'elasticity' => $validated['elasticity']
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Product stock replenished and catalog details updated.',
+                'data' => $existing->load('supplier')
+            ], 200);
+        }
+
         $product = Product::create($validated);
 
         return response()->json([

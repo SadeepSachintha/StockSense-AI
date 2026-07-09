@@ -190,4 +190,62 @@ class MultiTenantScopeTest extends TestCase
         $product->refresh();
         $this->assertEquals(50, $product->current_stock);
     }
+
+    /** @test */
+    public function it_upserts_product_stock_if_sku_already_exists(): void
+    {
+        $tenant = Tenant::create([
+            'id' => 'tenant_a',
+            'name' => 'Tenant A Retailers',
+            'subscription_tier' => 'basic',
+            'status' => 'active'
+        ]);
+
+        \App\Models\Supplier::create([
+            'id' => 1,
+            'tenant_id' => 'tenant_a',
+            'name' => 'AgriBulk Corp',
+            'contact_name' => 'John Agri',
+            'email' => 'agribulk@test.com',
+            'phone' => '123456'
+        ]);
+
+        $this->tenantManager->setTenantId('tenant_a');
+        $product = Product::create([
+            'sku' => 'SKU-UPSERT-1',
+            'name' => 'Initial Product',
+            'category' => 'Grains',
+            'price' => 5.00,
+            'current_stock' => 10,
+            'safety_stock' => 5,
+            'max_stock' => 100,
+            'reorder_qty' => 30,
+            'lead_time_days' => 4,
+            'supplier_id' => 1
+        ]);
+
+        $response = $this->withSession(['tenant_id' => 'tenant_a'])
+            ->postJson("/api/products", [
+                'sku' => 'SKU-UPSERT-1',
+                'name' => 'Updated Product Name',
+                'category' => 'Grains',
+                'price' => 6.50,
+                'current_stock' => 20,
+                'safety_stock' => 10,
+                'max_stock' => 150,
+                'reorder_qty' => 40,
+                'lead_time_days' => 5,
+                'supplier_id' => 1
+            ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['status' => 'success']);
+
+        $product->refresh();
+        // Unchanged SKU, but stock increments by 20 -> 30, and name is updated!
+        $this->assertEquals(30, $product->current_stock);
+        $this->assertEquals('Updated Product Name', $product->name);
+        $this->assertEquals(6.50, $product->price);
+        $this->assertCount(1, Product::all());
+    }
 }
