@@ -73,6 +73,15 @@
               MLOps Health
             </button>
           </li>
+          <li class="nav-item" :class="{ active: activeTab === 'admin' }">
+            <button @click="activeTab = 'admin'">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              SaaS Admin
+            </button>
+          </li>
         </ul>
       </nav>
 
@@ -104,11 +113,13 @@
           <h1 v-else-if="activeTab === 'restock'">Inventory & Restocking Center</h1>
           <h1 v-else-if="activeTab === 'pos'">POS Checkout Terminal</h1>
           <h1 v-else-if="activeTab === 'mlops'">MLOps Pipelines & Drift Observability</h1>
+          <h1 v-else-if="activeTab === 'admin'">SaaS Admin Control Panel</h1>
           <p v-if="activeTab === 'overview'">Real-time telemetry, ingest status, and recent actions.</p>
           <p v-else-if="activeTab === 'forecast'">Optuna-tuned LightGBM forecasts with price elasticity simulator.</p>
           <p v-else-if="activeTab === 'restock'">Automated supplier notifications and safety stock tracking.</p>
           <p v-else-if="activeTab === 'pos'">Checkout client orders and sync inventory in real-time.</p>
           <p v-else-if="activeTab === 'mlops'">Apache Airflow retraining workflows, MLflow metrics, and drift scoring.</p>
+          <p v-else-if="activeTab === 'admin'">Administer tenant profiles, manage subscription tiers, and switch tenant scopes.</p>
         </div>
         
         <div class="header-actions">
@@ -672,6 +683,113 @@
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- Panel: SaaS Tenant Admin Control Panel -->
+      <div v-else-if="activeTab === 'admin'" class="admin-grid">
+        
+        <!-- Left Pane: Register New Tenant Form -->
+        <div class="card">
+          <h3 class="dashboard-card-title">Provision Tenant</h3>
+          <form @submit.prevent="registerNewTenant">
+            <div class="admin-form-group">
+              <label>Tenant ID / Handle</label>
+              <input type="text" class="admin-input" v-model="newTenant.id" placeholder="e.g., tenant_003" required>
+            </div>
+            
+            <div class="admin-form-group">
+              <label>Administrator Name</label>
+              <input type="text" class="admin-input" v-model="newTenant.name" placeholder="e.g., John Connor" required>
+            </div>
+
+            <div class="admin-form-group">
+              <label>Company Name</label>
+              <input type="text" class="admin-input" v-model="newTenant.company_name" placeholder="e.g., Tech Solutions LLC">
+            </div>
+
+            <div class="admin-form-group">
+              <label>Subscription Tier</label>
+              <select class="select-input" style="width:100%" v-model="newTenant.subscription_tier" required>
+                <option value="free">Free Trial</option>
+                <option value="basic">Basic SaaS</option>
+                <option value="premium">Premium Predictive (Enterprise)</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;margin-top:1.5rem">
+              Register & Initialize Tenant
+            </button>
+          </form>
+        </div>
+
+        <!-- Right Pane: Active Tenant Profiles Grid -->
+        <div class="card">
+          <h3 class="dashboard-card-title">
+            <span>Customer Accounts Registry</span>
+            <span class="badge purple">@{{ tenantsList.length }} Registered</span>
+          </h3>
+          
+          <div class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tenant ID</th>
+                  <th>Admin Name</th>
+                  <th>Company</th>
+                  <th>SaaS Tier</th>
+                  <th>System Status</th>
+                  <th style="text-align:right">Management Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="tenant in tenantsList" :key="tenant.id" :style="tenant.id === activeTenantId ? 'background:rgba(139,92,246,0.05)' : ''">
+                  <td>
+                    <div style="font-weight:700">@{{ tenant.id }}</div>
+                    <span v-if="tenant.id === activeTenantId" class="badge success" style="font-size:0.6rem;padding:0.1rem 0.3rem">Active Context</span>
+                  </td>
+                  <td>@{{ tenant.name }}</td>
+                  <td>@{{ tenant.company_name || 'N/A' }}</td>
+                  <td>
+                    <select 
+                      class="select-input" 
+                      style="padding:0.25rem 0.5rem;font-size:0.75rem"
+                      v-model="tenant.subscription_tier"
+                      @change="changeTenantTier(tenant, tenant.subscription_tier)"
+                    >
+                      <option value="free">Free</option>
+                      <option value="basic">Basic</option>
+                      <option value="premium">Premium</option>
+                    </select>
+                  </td>
+                  <td>
+                    <span v-if="tenant.status === 'active'" class="badge success">Active</span>
+                    <span v-else class="badge danger">Suspended</span>
+                  </td>
+                  <td style="text-align:right">
+                    <div style="display:inline-flex;gap:0.5rem">
+                      <button 
+                        class="btn-mini"
+                        :class="tenant.id === activeTenantId ? 'success' : 'purple'"
+                        :disabled="tenant.status === 'suspended'"
+                        @click="switchTenantContext(tenant.id)"
+                      >
+                        @{{ tenant.id === activeTenantId ? 'Active Scope' : 'Switch Context' }}
+                      </button>
+                      <button 
+                        class="btn-mini"
+                        :class="tenant.status === 'active' ? 'danger' : 'success'"
+                        @click="toggleTenantStatus(tenant)"
+                      >
+                        @{{ tenant.status === 'active' ? 'Suspend' : 'Activate' }}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
 
     </main>

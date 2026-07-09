@@ -6,6 +6,11 @@ createApp({
     const activeTab = ref('overview');
     const systemStatus = ref('ETL Pipeline: Success');
     const systemStatusClass = ref('emerald');
+    const activeTenantId = ref(new URLSearchParams(window.location.search).get('tenant_id') || 'tenant_001');
+
+    // Tenant Administration UI bindings
+    const tenantsList = ref([]);
+    const newTenant = ref({ id: '', name: '', company_name: '', subscription_tier: 'free' });
     
     // Core KPIs
     const savedCapital = ref(12450);
@@ -243,7 +248,7 @@ createApp({
     // Load Live products list on boot
     const fetchLiveProducts = async () => {
       try {
-        const res = await fetch('/api/products?tenant_id=tenant_001');
+        const res = await fetch(`/api/products?tenant_id=${activeTenantId.value}`);
         const data = await res.json();
         
         if (data.status === 'success') {
@@ -306,7 +311,7 @@ createApp({
       systemStatusClass.value = 'warning';
 
       try {
-        const res = await fetch(`/api/products/${sku.id}/forecast?tenant_id=tenant_001`);
+        const res = await fetch(`/api/products/${sku.id}/forecast?tenant_id=${activeTenantId.value}`);
         const data = await res.json();
         
         if (data.status === 'success') {
@@ -331,10 +336,12 @@ createApp({
       }
     };
 
-    // Watch tab change to render chart
-    watch(activeTab, (newTab) => {
+    // Watch tab change to render chart or fetch tenants
+    watch(activeTab, async (newTab) => {
       if (newTab === 'forecast' || newTab === 'overview') {
         setTimeout(renderChart, 50);
+      } else if (newTab === 'admin') {
+        await fetchTenants();
       }
     });
 
@@ -359,11 +366,11 @@ createApp({
       
       try {
         // Call the real /api/products/ingest endpoint in the cloud
-        const res = await fetch('/api/products/ingest?tenant_id=tenant_001', {
+        const res = await fetch(`/api/products/ingest?tenant_id=${activeTenantId.value}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Tenant-ID': 'tenant_001'
+            'X-Tenant-ID': activeTenantId.value
           },
           body: JSON.stringify({
             transactions: [
@@ -588,11 +595,11 @@ createApp({
       };
 
       try {
-        const res = await fetch('/api/products/ingest?tenant_id=tenant_001', {
+        const res = await fetch(`/api/products/ingest?tenant_id=${activeTenantId.value}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Tenant-ID': 'tenant_001'
+            'X-Tenant-ID': activeTenantId.value
           },
           body: JSON.stringify(payload)
         });
@@ -626,6 +633,102 @@ createApp({
         systemStatus.value = "SaaS offline.";
         systemStatusClass.value = "danger";
       }
+    };
+
+    const fetchTenants = async () => {
+      try {
+        const res = await fetch('/api/tenants');
+        const data = await res.json();
+        if (data.status === 'success') {
+          tenantsList.value = data.data;
+        }
+      } catch (err) {
+        console.error("Error fetching tenants:", err);
+      }
+    };
+
+    const registerNewTenant = async () => {
+      if (!newTenant.value.id || !newTenant.value.name) {
+        alert("Please fill in both ID and Name.");
+        return;
+      }
+      try {
+        const res = await fetch('/api/tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newTenant.value)
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          toastAlert.value = {
+            show: true,
+            title: "Tenant Registered",
+            msg: `Successfully provisioned tenant: ${newTenant.value.name}.`,
+            skuName: newTenant.value.id,
+            channel: "SaaS Admin Console"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 4000);
+          newTenant.value = { id: '', name: '', company_name: '', subscription_tier: 'free' };
+          await fetchTenants();
+        } else {
+          alert("Registration failed: " + data.message);
+        }
+      } catch (err) {
+        console.error("Error creating tenant:", err);
+      }
+    };
+
+    const toggleTenantStatus = async (tenant) => {
+      const targetStatus = tenant.status === 'active' ? 'suspended' : 'active';
+      try {
+        const res = await fetch(`/api/tenants/${tenant.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: targetStatus })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          await fetchTenants();
+        }
+      } catch (err) {
+        console.error("Error updating tenant status:", err);
+      }
+    };
+
+    const changeTenantTier = async (tenant, tier) => {
+      try {
+        const res = await fetch(`/api/tenants/${tenant.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription_tier: tier })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          await fetchTenants();
+        }
+      } catch (err) {
+        console.error("Error updating subscription tier:", err);
+      }
+    };
+
+    const switchTenantContext = async (tenantId) => {
+      activeTenantId.value = tenantId;
+      const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?tenant_id=${tenantId}`;
+      window.history.pushState({ path: newurl }, '', newurl);
+      
+      skus.value = [];
+      selectedSkuId.value = '';
+      
+      toastAlert.value = {
+        show: true,
+        title: "Context Switched",
+        msg: `SaaS session switched to scope: ${tenantId}. Reloading inventory partition.`,
+        skuName: tenantId,
+        channel: "System Scope Manager"
+      };
+      setTimeout(() => { toastAlert.value.show = false; }, 4000);
+      
+      await fetchLiveProducts();
     };
 
     onMounted(async () => {
@@ -665,7 +768,15 @@ createApp({
       cartSubtotal,
       cartTax,
       cartTotal,
-      submitCheckout
+      submitCheckout,
+      tenantsList,
+      newTenant,
+      activeTenantId,
+      fetchTenants,
+      registerNewTenant,
+      toggleTenantStatus,
+      changeTenantTier,
+      switchTenantContext
     };
   }
 }).mount('#app');
