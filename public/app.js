@@ -1211,7 +1211,8 @@ window.vm = createApp({
         const res = await fetch(`/api/tenants/${activeTenantId.value}`);
         const data = await res.json();
         if (data.status === 'success') {
-          activeTenantTaxRate.value = parseFloat(data.data.tax_rate);
+          const parsedRate = parseFloat(data.data.tax_rate);
+          activeTenantTaxRate.value = isNaN(parsedRate) ? 8.0 : parsedRate;
         }
       } catch (err) {
         console.error("Error fetching active tenant settings:", err);
