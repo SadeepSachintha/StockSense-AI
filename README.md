@@ -176,4 +176,16 @@ In the production cloud instance, the default Laravel welcome screen has been re
 * **Live Cloud Interactivity:**
   * `GET /api/products` retrieves stock levels directly from the Neon database.
   * `GET /api/products/{id}/forecast` dispatches live inputs to the FastAPI regressor to map forecasting matrices and recalculate safety margins.
+  * **POS Checkout Terminal:** Exposes a full transactional cash register tab in the sidebar navigation. Cashiers can browse products, manage a cart with real-time tax/total adjustments, and checkout to write live transaction records and deduct inventory on the fly.
   * **POS Ingestion Simulation:** Clicking the CSV uploader fires a live POST query to `/api/products/ingest`, writing sales transactions to PostgreSQL in real-time and raising stockout alerts if safety thresholds are violated.
+
+---
+
+## 7. Industry Standards & Design Patterns Followed
+
+StockSense AI is built around modern software engineering, data, and ML engineering standards:
+* **Multi-Tenant Logical Isolation:** Restricts data access strictly to authenticated tenants via global Eloquent scopes (`TenantScope`) and traits, preventing cross-tenant data leaks.
+* **Time-Series Database Optimization:** Configures `pos_transactions` as a partitioned TimescaleDB hypertable for optimized time-series calculations.
+* **Separation of Concerns (Microservices):** Decouples inventory management (Laravel 12) from mathematical forecast prediction calculations (Python FastAPI).
+* **Enterprise MLOps Orchestration:** Runs automated Apache Airflow retraining loops incorporating Great Expectations (schema check), Parquet file compaction, MLflow tracking, and drift observables.
+* **Protocol-Agnostic Assets:** Employs relative URL path bindings for static CSS and JS modules to bypass Mixed Content blocks behind reverse proxies.
