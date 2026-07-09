@@ -1094,12 +1094,19 @@
           </div>
 
           <div style="margin-bottom:1.5rem">
-            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Supplier Connection</label>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+              <label style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;font-weight:600">Supplier Connection</label>
+              <button type="button" @click="showAddSupplierModal = true" style="background:transparent;border:none;color:var(--accent-purple);font-size:0.75rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:0.25rem;">
+                <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                + Register New
+              </button>
+            </div>
             <select class="select-input" style="width:100%" v-model="newProductData.supplier_id" required>
               <option value="" disabled>Select Supplier...</option>
-              <option value="1">AgriBulk Corp</option>
-              <option value="2">GrownOrganic Farms</option>
-              <option value="3">VeggieDistributors</option>
+              <option v-for="sup in suppliersList" :key="sup.id" :value="sup.id">@{{ sup.name }}</option>
             </select>
           </div>
 
@@ -1206,9 +1213,7 @@
                   <td style="padding: 0.4rem 0.25rem;">
                     <select class="select-input" style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%;height:auto" v-model="prod.supplier_id" required>
                       <option value="" disabled>Select...</option>
-                      <option value="1">AgriBulk Corp</option>
-                      <option value="2">GrownOrganic Farms</option>
-                      <option value="3">VeggieDistributors</option>
+                      <option v-for="sup in suppliersList" :key="sup.id" :value="sup.id">@{{ sup.name }}</option>
                     </select>
                   </td>
                   <td style="padding: 0.4rem 0.25rem; text-align: center;">
@@ -1243,6 +1248,51 @@
             </button>
             <button type="submit" class="btn-primary" style="width:220px;justify-content:center;padding:0.65rem;background:var(--gradient-purple)">
               Create SKU List
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add Supplier Nested Modal Overlay -->
+    <div class="modal-overlay" v-if="showAddSupplierModal" style="z-index: 1000; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center;">
+      <div class="receipt-modal" style="max-width: 420px; padding: 2rem; border: 1px solid rgba(255,255,255,0.06); text-align: left;">
+        <div style="text-align:center;margin-bottom:1.5rem">
+          <div style="font-size:1.35rem;font-weight:800;font-family:var(--font-display);color:var(--accent-purple);">Register New Supplier</div>
+          <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.25rem;">Create a scoped supplier connection profile.</div>
+        </div>
+
+        <form @submit.prevent="submitNewSupplier">
+          <div class="admin-form-group" style="margin-bottom:1rem">
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Supplier Name</label>
+            <input type="text" class="admin-input" v-model="newSupplier.name" placeholder="e.g. GrownOrganic Farms" style="width:100%;box-sizing:border-box" required>
+          </div>
+
+          <div class="admin-form-group" style="margin-bottom:1rem">
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Email Address</label>
+            <input type="email" class="admin-input" v-model="newSupplier.email" placeholder="e.g. orders@grownorganic.com" style="width:100%;box-sizing:border-box">
+          </div>
+
+          <div class="admin-form-group" style="margin-bottom:1rem">
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Phone Number</label>
+            <input type="text" class="admin-input" v-model="newSupplier.phone" placeholder="e.g. +15550299" style="width:100%;box-sizing:border-box">
+          </div>
+
+          <div class="admin-form-group" style="margin-bottom:1.5rem">
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Alert Channel</label>
+            <select class="select-input" style="width:100%" v-model="newSupplier.alert_channel" required>
+              <option value="Email">Email Notification</option>
+              <option value="WhatsApp">WhatsApp Message</option>
+              <option value="SMS">Direct SMS Text</option>
+            </select>
+          </div>
+
+          <div style="display:flex;gap:0.75rem">
+            <button type="button" class="btn-secondary" style="flex:1;justify-content:center;padding:0.65rem" @click="showAddSupplierModal = false">
+              Cancel
+            </button>
+            <button type="submit" class="btn-primary" style="flex:1;justify-content:center;padding:0.65rem;background:var(--gradient-purple)">
+              Save Supplier
             </button>
           </div>
         </form>

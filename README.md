@@ -219,6 +219,7 @@ Recently, StockSense AI underwent six core enterprise production upgrades:
 
 ### E. Interactive Product Catalog, CSV Imports & Batch List Management
 - **Add Product UI Modal:** Added a popup form to add new products/SKUs to the catalog directly from the POS interface. Supports tab-switching between a Single SKU Form and an interactive Batch List Table.
+- **Dynamic Supplier Registry:** Replaced hardcoded supplier names with a dynamic database query loop. Built a nested sub-modal inside the catalog management overlay to register new supplier contact details (Name, Email, Phone, Alert Channel) on the fly and immediately select them.
 - **Bulk CSV Parser & Template Downloader:** Integrates a client-side CSV template downloader and a FileReader-based file parser. Users can download a spreadsheet template, fill it with store items, and upload it to pre-fill the batch table instantly.
 - **Batch Row Controls:** Allows cashiers to click **`Add Product Row`** to add infinite SKU configurations in a spreadsheet-like grid and delete rows with inline trash icons.
 - **Transactional RESTful API:** Programmed a secure backend POST handler under `/api/products` mapping to [ProductForecastController.php](file:///d:/xampp/htdocs/StockSense%20AI/app/Http/Controllers/ProductForecastController.php) to seed single items or lists. Wrapped list creation in a database transaction (`DB::beginTransaction()`) to guarantee atomic entries.

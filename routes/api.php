@@ -12,6 +12,10 @@ Route::post('/products', [ProductForecastController::class, 'store']);
 Route::get('/products/{id}/forecast', [ProductForecastController::class, 'showForecast']);
 Route::post('/products/ingest', [POSIngestController::class, 'ingest']);
 
+// Supplier Management Routes
+Route::get('/suppliers', [\App\Http\Controllers\SupplierController::class, 'index']);
+Route::post('/suppliers', [\App\Http\Controllers\SupplierController::class, 'store']);
+
 // Tenant Administration CRUD Routes
 Route::get('/tenants', [TenantController::class, 'index']);
 Route::post('/tenants', [TenantController::class, 'store']);

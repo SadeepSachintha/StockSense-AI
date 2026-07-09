@@ -13,6 +13,11 @@ window.vm = createApp({
     const newTenant = ref({ id: '', name: '', company_name: '', subscription_tier: 'free', tax_rate: 8.0 });
     const activeTenantTaxRate = ref(8.0);
     
+    // Supplier Management UI bindings
+    const suppliersList = ref([]);
+    const newSupplier = ref({ name: '', email: '', phone: '', alert_channel: 'Email' });
+    const showAddSupplierModal = ref(false);
+    
     // Core KPIs
     const isOnline = ref(navigator.onLine);
     const showReceiptModal = ref(false);
@@ -1213,6 +1218,59 @@ window.vm = createApp({
       }
     };
 
+    const fetchSuppliers = async () => {
+      try {
+        const res = await fetch(`/api/suppliers?tenant_id=${activeTenantId.value}`);
+        const data = await res.json();
+        if (data.status === 'success') {
+          suppliersList.value = data.data;
+        }
+      } catch (err) {
+        console.error("Error fetching suppliers:", err);
+      }
+    };
+
+    const submitNewSupplier = async () => {
+      if (!newSupplier.value.name) {
+        alert("Please enter a supplier name.");
+        return;
+      }
+      try {
+        const res = await fetch(`/api/suppliers?tenant_id=${activeTenantId.value}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Tenant-ID': activeTenantId.value
+          },
+          body: JSON.stringify(newSupplier.value)
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          toastAlert.value = {
+            show: true,
+            title: "Supplier Registered",
+            msg: `Successfully registered supplier: ${newSupplier.value.name}.`,
+            skuName: data.data.id,
+            channel: "Supplier Registry"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 4000);
+          
+          const newId = data.data.id;
+          newSupplier.value = { name: '', email: '', phone: '', alert_channel: 'Email' };
+          showAddSupplierModal.value = false;
+          
+          await fetchSuppliers();
+          newProductData.value.supplier_id = newId;
+        } else {
+          alert("Failed to save supplier: " + (data.message || JSON.stringify(data.errors)));
+        }
+      } catch (err) {
+        console.error("Error registering supplier:", err);
+        alert("Server communication error.");
+      }
+    };
+
     const changeTenantTaxRate = async (tenant, newTaxRate) => {
       try {
         const res = await fetch(`/api/tenants/${tenant.id}`, {
@@ -1255,6 +1313,7 @@ window.vm = createApp({
       setTimeout(() => { toastAlert.value.show = false; }, 4000);
       
       await fetchActiveTenantSettings();
+      await fetchSuppliers();
       await fetchLiveProducts();
     };
 
@@ -1311,6 +1370,7 @@ window.vm = createApp({
 
     onMounted(async () => {
       await fetchActiveTenantSettings();
+      await fetchSuppliers();
       await fetchLiveProducts();
 
       // Monitor network online/offline transitions
@@ -1457,7 +1517,12 @@ window.vm = createApp({
       activeTenantTaxRate,
       changeTenantTaxRate,
       downloadCSVTemplate,
-      handleCSVUpload
+      handleCSVUpload,
+      suppliersList,
+      newSupplier,
+      showAddSupplierModal,
+      fetchSuppliers,
+      submitNewSupplier
     };
   }
 }).mount('#app');
