@@ -51,8 +51,8 @@ class ProductForecastController extends Controller
         $apiUrl = config('services.predictor.url', 'http://127.0.0.1:8000') . '/predict';
 
         try {
-            // Call FastAPI prediction engine
-            $response = Http::timeout(5)->post($apiUrl, [
+            // Call FastAPI prediction engine (increased timeout to 35 seconds to accommodate free tier cold-starts)
+            $response = Http::timeout(35)->post($apiUrl, [
                 'sku_id' => $product->sku,
                 'sales_history' => array_map('floatval', $history),
                 'price' => (float)$product->price,
