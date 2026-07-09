@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>StockSense AI - Predictive Inventory & Demand Forecasting SaaS</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/style.css?v={{ time() }}">
   <!-- Load Vue 3 and Chart.js from CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -102,10 +102,12 @@
           <h1 v-if="activeTab === 'overview'">SaaS Operations Overview</h1>
           <h1 v-else-if="activeTab === 'forecast'">Predictive Demand Forecaster</h1>
           <h1 v-else-if="activeTab === 'restock'">Inventory & Restocking Center</h1>
+          <h1 v-else-if="activeTab === 'pos'">POS Checkout Terminal</h1>
           <h1 v-else-if="activeTab === 'mlops'">MLOps Pipelines & Drift Observability</h1>
           <p v-if="activeTab === 'overview'">Real-time telemetry, ingest status, and recent actions.</p>
           <p v-else-if="activeTab === 'forecast'">Optuna-tuned LightGBM forecasts with price elasticity simulator.</p>
           <p v-else-if="activeTab === 'restock'">Automated supplier notifications and safety stock tracking.</p>
+          <p v-else-if="activeTab === 'pos'">Checkout client orders and sync inventory in real-time.</p>
           <p v-else-if="activeTab === 'mlops'">Apache Airflow retraining workflows, MLflow metrics, and drift scoring.</p>
         </div>
         
@@ -130,7 +132,7 @@
       </header>
 
       <!-- KPI Grid -->
-      <section class="kpi-grid">
+      <section class="kpi-grid" v-if="activeTab === 'overview' || activeTab === 'forecast'">
         <!-- Capital Freed -->
         <div class="card emerald">
           <div class="card-header-flex">
@@ -689,6 +691,6 @@
 
   </div>
 
-  <script src="/app.js"></script>
+  <script src="/app.js?v={{ time() }}"></script>
 </body>
 </html>
