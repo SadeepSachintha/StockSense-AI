@@ -195,10 +195,10 @@ StockSense AI is built around modern software engineering, data, and ML engineer
 
 ## 8. Advanced Platform Upgrades
 
-Recently, StockSense AI underwent five core enterprise production upgrades:
+Recently, StockSense AI underwent six core enterprise production upgrades:
 
 ### A. POS Offline Resiliency, Discounts & Print Receipts
-- **Cart-Level Discount Engine:** Supports applying order discounts as either a percentage (`%`) or a fixed monetary value (`$`). Net subtotal deductions dynamically adjust the 8% sales tax calculation and grand totals in real-time.
+- **Cart-Level Discount Engine:** Supports applying order discounts as either a percentage (`%`) or a fixed monetary value (`$`). Net subtotal deductions dynamically adjust the sales tax calculation and grand totals in real-time.
 - **Client-Side Storage Caching:** Integrated connection monitoring (`navigator.onLine`). If network connectivity drops, POS checkouts are cached in `localStorage` and automatically synchronized to the cloud on recovery.
 - **Synthesized Audio Engine:** Built a Web Audio API sound generator playing high-fidelity cashier beeps for successful scans and buzzer alerts for offline/connection errors.
 - **Printer-Friendly Receipts (`@media print`):** Flat CSS page resets block height constraints to render clean thermal cash receipts in print preview.
@@ -222,3 +222,8 @@ Recently, StockSense AI underwent five core enterprise production upgrades:
 - **Bulk CSV Parser & Template Downloader:** Integrates a client-side CSV template downloader and a FileReader-based file parser. Users can download a spreadsheet template, fill it with store items, and upload it to pre-fill the batch table instantly.
 - **Batch Row Controls:** Allows cashiers to click **`Add Product Row`** to add infinite SKU configurations in a spreadsheet-like grid and delete rows with inline trash icons.
 - **Transactional RESTful API:** Programmed a secure backend POST handler under `/api/products` mapping to [ProductForecastController.php](file:///d:/xampp/htdocs/StockSense%20AI/app/Http/Controllers/ProductForecastController.php) to seed single items or lists. Wrapped list creation in a database transaction (`DB::beginTransaction()`) to guarantee atomic entries.
+
+### F. SaaS Customer Configurable VAT / Tax Settings
+- **Dynamic Tenant VAT Columns:** Added a customizable `tax_rate` attribute (defaulting to 8%) to all registered business tenant stores inside the Neon PostgreSQL database.
+- **Administrative Tax Controls:** Allows SaaS operators to adjust each customer store's VAT rate inline in the Accounts table or during provisioning.
+- **Active Session Scoped Calculations:** The cashier terminal dynamically reads and applies the store's tax rates on checkouts and outputs correct percentages in printable invoices.
