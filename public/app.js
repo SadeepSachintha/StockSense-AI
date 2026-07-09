@@ -1,3 +1,5 @@
+const { createApp, ref, computed, onMounted, watch } = Vue;
+
 window.vm = createApp({
   setup() {
     // Nav & System status
