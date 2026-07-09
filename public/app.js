@@ -10,7 +10,8 @@ window.vm = createApp({
 
     // Tenant Administration UI bindings
     const tenantsList = ref([]);
-    const newTenant = ref({ id: '', name: '', company_name: '', subscription_tier: 'free' });
+    const newTenant = ref({ id: '', name: '', company_name: '', subscription_tier: 'free', tax_rate: 8.0 });
+    const activeTenantTaxRate = ref(8.0);
     
     // Core KPIs
     const isOnline = ref(navigator.onLine);
@@ -779,7 +780,7 @@ window.vm = createApp({
 
     const cartTax = computed(() => {
       const net = Math.max(0, cartSubtotal.value - discountAmount.value);
-      return net * 0.08; // 8% sales tax
+      return net * (activeTenantTaxRate.value / 100);
     });
 
     const cartTotal = computed(() => {
@@ -1094,6 +1095,42 @@ window.vm = createApp({
       }
     };
 
+    const fetchActiveTenantSettings = async () => {
+      try {
+        const res = await fetch(`/api/tenants/${activeTenantId.value}`);
+        const data = await res.json();
+        if (data.status === 'success') {
+          activeTenantTaxRate.value = parseFloat(data.data.tax_rate);
+        }
+      } catch (err) {
+        console.error("Error fetching active tenant settings:", err);
+      }
+    };
+
+    const changeTenantTaxRate = async (tenant, newTaxRate) => {
+      try {
+        const res = await fetch(`/api/tenants/${tenant.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tax_rate: parseFloat(newTaxRate) })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          toastAlert.value = {
+            show: true,
+            title: "Tax Settings Updated",
+            msg: `Successfully adjusted tax/VAT rate for ${tenant.name} to ${newTaxRate}%.`,
+            skuName: tenant.id,
+            channel: "SaaS Admin Console"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 4000);
+          await fetchTenants();
+        }
+      } catch (err) {
+        console.error("Error changing tenant tax rate:", err);
+      }
+    };
+
     const switchTenantContext = async (tenantId) => {
       activeTenantId.value = tenantId;
       const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?tenant_id=${tenantId}`;
@@ -1111,6 +1148,7 @@ window.vm = createApp({
       };
       setTimeout(() => { toastAlert.value.show = false; }, 4000);
       
+      await fetchActiveTenantSettings();
       await fetchLiveProducts();
     };
 
@@ -1165,6 +1203,7 @@ window.vm = createApp({
     };
 
     onMounted(async () => {
+      await fetchActiveTenantSettings();
       await fetchLiveProducts();
 
       // Monitor network online/offline transitions
@@ -1307,7 +1346,9 @@ window.vm = createApp({
       submitNewProductBatch,
       discountType,
       discountValue,
-      discountAmount
+      discountAmount,
+      activeTenantTaxRate,
+      changeTenantTaxRate
     };
   }
 }).mount('#app');

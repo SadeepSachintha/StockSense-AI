@@ -40,7 +40,8 @@ class TenantManagementTest extends TestCase
             'name' => 'Alice Cooper',
             'company_name' => 'Cooper Agribusiness',
             'subscription_tier' => 'basic',
-            'status' => 'active'
+            'status' => 'active',
+            'tax_rate' => 15.00
         ];
 
         $response = $this->postJson('/api/tenants', $payload);
@@ -53,7 +54,8 @@ class TenantManagementTest extends TestCase
 
         $this->assertDatabaseHas('tenants', [
             'id' => 'new_tenant_123',
-            'name' => 'Alice Cooper'
+            'name' => 'Alice Cooper',
+            'tax_rate' => 15.00
         ]);
     }
 
@@ -93,7 +95,8 @@ class TenantManagementTest extends TestCase
 
         $payload = [
             'name' => 'Robert Nesta Marley',
-            'subscription_tier' => 'premium'
+            'subscription_tier' => 'premium',
+            'tax_rate' => 0.00
         ];
 
         $response = $this->putJson("/api/tenants/{$tenant->id}", $payload);
@@ -107,7 +110,8 @@ class TenantManagementTest extends TestCase
         $this->assertDatabaseHas('tenants', [
             'id' => 'tenant_test_update',
             'name' => 'Robert Nesta Marley',
-            'subscription_tier' => 'premium'
+            'subscription_tier' => 'premium',
+            'tax_rate' => 0.00
         ]);
     }
 

@@ -31,6 +31,7 @@ class TenantController extends Controller
             'company_name' => 'nullable|string|max:255',
             'subscription_tier' => 'required|string|in:free,basic,premium',
             'status' => 'nullable|string|in:active,suspended',
+            'tax_rate' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $validated['status'] = $validated['status'] ?? 'active';
@@ -68,10 +69,14 @@ class TenantController extends Controller
             'company_name' => 'nullable|string|max:255',
             'subscription_tier' => 'nullable|string|in:free,basic,premium',
             'status' => 'nullable|string|in:active,suspended',
+            'tax_rate' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        // Clean nulls to avoid clearing active attributes if partial payload
-        $tenant->update(array_filter($validated));
+        // Clean nulls to avoid clearing active attributes if partial payload, but keep 0 values!
+        $data = array_filter($validated, function ($val) {
+            return !is_null($val);
+        });
+        $tenant->update($data);
 
         return response()->json([
             'status' => 'success',

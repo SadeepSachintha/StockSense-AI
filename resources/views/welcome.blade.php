@@ -737,7 +737,7 @@
                 <strong>- $@{{ discountAmount.toFixed(2) }}</strong>
               </div>
               <div style="display:flex;justify-content:space-between;">
-                <span style="color:var(--text-secondary);">Sales Tax (8%):</span>
+                <span style="color:var(--text-secondary);">VAT / Tax (@{{ activeTenantTaxRate }}%):</span>
                 <strong>$@{{ cartTax.toFixed(2) }}</strong>
               </div>
               <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.05);padding-top:0.5rem;font-size:1.05rem;color:var(--text-primary);">
@@ -951,7 +951,7 @@
             <strong>- $@{{ receiptData.discount.toFixed(2) }}</strong>
           </div>
           <div style="display:flex;justify-content:space-between;">
-            <span>Sales Tax (8%):</span>
+            <span>VAT / Tax (@{{ activeTenantTaxRate }}%):</span>
             <span style="color:var(--text-primary);">$@{{ receiptData.tax.toFixed(2) }}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:1.1rem;color:var(--text-primary);border-top:1px solid rgba(255,255,255,0.05);padding-top:0.5rem;margin-top:0.25rem;">
@@ -1001,7 +1001,7 @@
         <span>- $@{{ receiptData.discount.toFixed(2) }}</span>
       </div>
       <div style="display:flex;justify-content:space-between;">
-        <span>SALES TAX (8%)</span>
+        <span>VAT / TAX (@{{ activeTenantTaxRate }}%)</span>
         <span>$@{{ receiptData.tax.toFixed(2) }}</span>
       </div>
       <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;margin-top:5px;">

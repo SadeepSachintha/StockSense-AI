@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('company_name')->nullable();
             $table->string('subscription_tier')->default('basic'); // basic, premium, enterprise
             $table->string('status')->default('active'); // active, suspended, trial
+            $table->decimal('tax_rate', 5, 2)->default(8.00);
             $table->timestamps();
         });
     }

@@ -18,6 +18,7 @@ class Tenant extends Model
         'company_name',
         'subscription_tier',
         'status',
+        'tax_rate',
     ];
 
     /**

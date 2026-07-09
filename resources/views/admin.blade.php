@@ -98,13 +98,18 @@
               <input type="text" class="admin-input" v-model="newTenant.company_name" placeholder="e.g., Tech Solutions LLC" style="width:100%">
             </div>
 
-            <div class="admin-form-group" style="margin-bottom:1.5rem">
+            <div class="admin-form-group" style="margin-bottom:1rem">
               <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem">Subscription Tier</label>
               <select class="select-input" style="width:100%" v-model="newTenant.subscription_tier" required>
                 <option value="free">Free Trial</option>
                 <option value="basic">Basic SaaS</option>
                 <option value="premium">Premium Predictive (Enterprise)</option>
               </select>
+            </div>
+
+            <div class="admin-form-group" style="margin-bottom:1.5rem">
+              <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem">VAT / Sales Tax Rate (%)</label>
+              <input type="number" step="0.1" min="0" max="100" class="admin-input" v-model.number="newTenant.tax_rate" style="width:100%" placeholder="e.g., 8.0" required>
             </div>
 
             <button type="submit" class="btn-primary" style="width:100%;justify-content:center;margin-top:1rem;background:var(--gradient-rose);border-color:var(--accent-rose)">
@@ -128,6 +133,7 @@
                   <th>Admin Name</th>
                   <th>Company</th>
                   <th>SaaS Tier</th>
+                  <th>VAT Rate</th>
                   <th>System Status</th>
                   <th style="text-align:right">Management Actions</th>
                 </tr>
@@ -151,6 +157,21 @@
                       <option value="basic">Basic</option>
                       <option value="premium">Premium</option>
                     </select>
+                  </td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:0.25rem;">
+                      <input 
+                        type="number" 
+                        step="0.1" 
+                        min="0" 
+                        max="100" 
+                        class="admin-input" 
+                        style="padding:0.25rem 0.4rem;font-size:0.75rem;width:60px;height:auto" 
+                        v-model.number="tenant.tax_rate"
+                        @change="changeTenantTaxRate(tenant, tenant.tax_rate)"
+                      >
+                      <span style="font-size:0.75rem;color:var(--text-secondary);">%</span>
+                    </div>
                   </td>
                   <td>
                     <span v-if="tenant.status === 'active'" class="badge success">Active</span>
