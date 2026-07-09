@@ -1048,31 +1048,19 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
             <div>
               <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Product Name</label>
-              <div style="position:relative;">
-                <input 
-                  type="text" 
-                  class="admin-input" 
-                  v-model="newProductData.name" 
-                  placeholder="e.g. Organic Jasmine Rice" 
-                  style="width:100%;box-sizing:border-box" 
-                  @focus="showSingleSuggestions = true"
-                  @blur="setTimeout(() => { showSingleSuggestions = false; }, 200)"
-                  required
-                >
-                <!-- Autocomplete suggestions dropdown -->
-                <div v-if="showSingleSuggestions && singleSuggestions.length > 0" class="barcode-suggestions-dropdown" style="display:block;top:100%;width:100%;z-index:50;">
-                  <div 
-                    v-for="tpl in singleSuggestions" 
-                    :key="tpl.sku" 
-                    class="barcode-suggestion-item" 
-                    style="font-size:0.75rem;padding:0.4rem 0.6rem;display:flex;justify-content:space-between;cursor:pointer;"
-                    @mousedown="selectSingleTemplate(tpl)"
-                  >
-                    <span>@{{ tpl.name }}</span>
-                    <span style="color:var(--accent-purple);font-weight:600;">@{{ tpl.category }}</span>
-                  </div>
-                </div>
-              </div>
+              <input 
+                type="text" 
+                class="admin-input" 
+                v-model="newProductData.name" 
+                list="single-product-tpls"
+                @input="handleSingleNameInput"
+                placeholder="e.g. Organic Jasmine Rice" 
+                style="width:100%;box-sizing:border-box" 
+                required
+              >
+              <datalist id="single-product-tpls">
+                <option v-for="tpl in productTemplates" :key="tpl.sku" :value="tpl.name">@{{ tpl.category }}</option>
+              </datalist>
             </div>
             <div>
               <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">SKU Code</label>
@@ -1207,30 +1195,17 @@
               </thead>
               <tbody>
                 <tr v-for="(prod, index) in batchProductList" :key="index">
-                  <td style="padding: 0.4rem 0.25rem; position: relative;">
+                  <td style="padding: 0.4rem 0.25rem;">
                     <input 
                       type="text" 
                       class="admin-input" 
                       style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%" 
                       v-model="prod.name" 
+                      list="batch-product-tpls"
+                      @input="handleBatchNameInput(prod, index)"
                       placeholder="Name" 
-                      @focus="activeBatchSuggestionRow = index"
-                      @blur="setTimeout(() => { if (activeBatchSuggestionRow === index) activeBatchSuggestionRow = -1; }, 200)"
                       required
                     >
-                    <!-- Batch row suggestions dropdown -->
-                    <div v-if="activeBatchSuggestionRow === index && getBatchSuggestions(prod.name).length > 0" class="barcode-suggestions-dropdown" style="display:block;top:100%;width:calc(100% - 0.5rem);left:0.25rem;z-index:50;">
-                      <div 
-                        v-for="tpl in getBatchSuggestions(prod.name)" 
-                        :key="tpl.sku" 
-                        class="barcode-suggestion-item" 
-                        style="font-size:0.7rem;padding:0.3rem 0.5rem;display:flex;justify-content:space-between;cursor:pointer;"
-                        @mousedown="selectBatchTemplate(index, tpl)"
-                      >
-                        <span>@{{ tpl.name }}</span>
-                        <span style="color:var(--accent-purple);font-weight:600;">@{{ tpl.category }}</span>
-                      </div>
-                    </div>
                   </td>
                   <td style="padding: 0.4rem 0.25rem;">
                     <input type="text" class="admin-input" style="padding:0.35rem 0.5rem;font-size:0.75rem;width:100%" v-model="prod.sku" placeholder="SKU" required>
@@ -1274,6 +1249,10 @@
               </tbody>
             </table>
           </div>
+
+          <datalist id="batch-product-tpls">
+            <option v-for="tpl in productTemplates" :key="tpl.sku" :value="tpl.name">@{{ tpl.category }}</option>
+          </datalist>
 
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
             <button type="button" class="btn-primary" style="padding:0.45rem 0.85rem;font-size:0.75rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:var(--text-primary)" @click="addBatchRow">

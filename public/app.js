@@ -1008,11 +1008,13 @@ window.vm = createApp({
       }
     };
 
-    const singleSuggestions = computed(() => {
+    const handleSingleNameInput = () => {
       const q = (newProductData.value.name || '').trim().toLowerCase();
-      if (!q) return [];
-      return productTemplates.filter(t => t.name.toLowerCase().includes(q));
-    });
+      const matched = productTemplates.find(t => t.name.toLowerCase() === q);
+      if (matched) {
+        selectSingleTemplate(matched);
+      }
+    };
 
     const selectSingleTemplate = (tpl) => {
       newProductData.value.name = tpl.name;
@@ -1024,13 +1026,14 @@ window.vm = createApp({
       newProductData.value.reorder_qty = tpl.reorder_qty;
       newProductData.value.lead_time_days = tpl.lead_time_days;
       newProductData.value.supplier_id = tpl.supplier_id;
-      showSingleSuggestions.value = false;
     };
 
-    const getBatchSuggestions = (nameQuery) => {
-      const q = (nameQuery || '').trim().toLowerCase();
-      if (!q) return [];
-      return productTemplates.filter(t => t.name.toLowerCase().includes(q));
+    const handleBatchNameInput = (prod, index) => {
+      const q = (prod.name || '').trim().toLowerCase();
+      const matched = productTemplates.find(t => t.name.toLowerCase() === q);
+      if (matched) {
+        selectBatchTemplate(index, matched);
+      }
     };
 
     const selectBatchTemplate = (index, tpl) => {
@@ -1046,7 +1049,6 @@ window.vm = createApp({
         batchProductList.value[index].lead_time_days = tpl.lead_time_days;
         batchProductList.value[index].supplier_id = tpl.supplier_id;
       }
-      activeBatchSuggestionRow.value = -1;
     };
 
     const addBatchRow = () => {
@@ -1619,12 +1621,9 @@ window.vm = createApp({
       showAddSupplierModal,
       fetchSuppliers,
       submitNewSupplier,
-      showSingleSuggestions,
-      singleSuggestions,
-      selectSingleTemplate,
-      activeBatchSuggestionRow,
-      getBatchSuggestions,
-      selectBatchTemplate
+      productTemplates,
+      handleSingleNameInput,
+      handleBatchNameInput
     };
   }
 }).mount('#app');
