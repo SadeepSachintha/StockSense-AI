@@ -30,6 +30,27 @@ window.vm = createApp({
     const driftLimit = ref(5.0);
     const showAddProductModal = ref(false);
     const addProductTab = ref('single');
+
+    const productTemplates = [
+      { name: 'Organic Fuji Apples', sku: 'FR-APP-FUJ', category: 'Fruits', price: 2.49, safety_stock: 30, max_stock: 400, reorder_qty: 80, lead_time_days: 5, supplier_id: 2 },
+      { name: 'Cavendish Bananas', sku: 'FR-BAN-CAV', category: 'Fruits', price: 1.89, safety_stock: 40, max_stock: 500, reorder_qty: 100, lead_time_days: 3, supplier_id: 1 },
+      { name: 'Fresh Strawberries', sku: 'FR-STR-RAW', category: 'Fruits', price: 3.49, safety_stock: 20, max_stock: 200, reorder_qty: 50, lead_time_days: 4, supplier_id: 2 },
+      { name: 'Jasmine Rice', sku: 'GR-RIC-JAS', category: 'Grains', price: 8.99, safety_stock: 50, max_stock: 500, reorder_qty: 120, lead_time_days: 6, supplier_id: 1 },
+      { name: 'Basmati Rice', sku: 'GR-RIC-BAS', category: 'Grains', price: 9.99, safety_stock: 40, max_stock: 450, reorder_qty: 100, lead_time_days: 5, supplier_id: 1 },
+      { name: 'Whole Wheat Oats', sku: 'GR-OAT-WHL', category: 'Grains', price: 4.89, safety_stock: 30, max_stock: 300, reorder_qty: 80, lead_time_days: 5, supplier_id: 3 },
+      { name: 'Fresh Baby Spinach', sku: 'VG-SPI-BAB', category: 'Vegetables', price: 3.99, safety_stock: 15, max_stock: 250, reorder_qty: 50, lead_time_days: 3, supplier_id: 3 },
+      { name: 'Red Tomatoes', sku: 'VG-TOM-RED', category: 'Vegetables', price: 2.99, safety_stock: 25, max_stock: 300, reorder_qty: 60, lead_time_days: 4, supplier_id: 2 },
+      { name: 'Organic Broccoli', sku: 'VG-BRO-ORG', category: 'Vegetables', price: 3.29, safety_stock: 20, max_stock: 200, reorder_qty: 45, lead_time_days: 3, supplier_id: 3 },
+      { name: 'Whole Milk 1L', sku: 'DY-MLK-WHL', category: 'Dairy', price: 1.99, safety_stock: 50, max_stock: 600, reorder_qty: 150, lead_time_days: 2, supplier_id: 1 },
+      { name: 'Greek Yogurt 500g', sku: 'DY-YOG-GRK', category: 'Dairy', price: 4.49, safety_stock: 25, max_stock: 250, reorder_qty: 60, lead_time_days: 3, supplier_id: 1 },
+      { name: 'Salted Butter 250g', sku: 'DY-BUT-SLT', category: 'Dairy', price: 3.79, safety_stock: 30, max_stock: 300, reorder_qty: 75, lead_time_days: 4, supplier_id: 1 },
+      { name: 'Green Tea 20 Bags', sku: 'BV-TEA-GRN', category: 'Beverages', price: 3.89, safety_stock: 15, max_stock: 150, reorder_qty: 40, lead_time_days: 4, supplier_id: 3 },
+      { name: 'Espresso Beans 1kg', sku: 'BV-COF-ESP', category: 'Beverages', price: 18.99, safety_stock: 10, max_stock: 100, reorder_qty: 25, lead_time_days: 5, supplier_id: 1 },
+      { name: 'Spring Water 500ml', sku: 'BV-WTR-SPR', category: 'Beverages', price: 0.99, safety_stock: 100, max_stock: 1200, reorder_qty: 300, lead_time_days: 3, supplier_id: 1 }
+    ];
+
+    const showSingleSuggestions = ref(false);
+    const activeBatchSuggestionRow = ref(-1);
     const createBlankProduct = () => ({
       sku: '',
       name: '',
@@ -987,6 +1008,47 @@ window.vm = createApp({
       }
     };
 
+    const singleSuggestions = computed(() => {
+      const q = (newProductData.value.name || '').trim().toLowerCase();
+      if (!q) return [];
+      return productTemplates.filter(t => t.name.toLowerCase().includes(q));
+    });
+
+    const selectSingleTemplate = (tpl) => {
+      newProductData.value.name = tpl.name;
+      newProductData.value.sku = tpl.sku;
+      newProductData.value.category = tpl.category;
+      newProductData.value.price = tpl.price;
+      newProductData.value.safety_stock = tpl.safety_stock;
+      newProductData.value.max_stock = tpl.max_stock;
+      newProductData.value.reorder_qty = tpl.reorder_qty;
+      newProductData.value.lead_time_days = tpl.lead_time_days;
+      newProductData.value.supplier_id = tpl.supplier_id;
+      showSingleSuggestions.value = false;
+    };
+
+    const getBatchSuggestions = (nameQuery) => {
+      const q = (nameQuery || '').trim().toLowerCase();
+      if (!q) return [];
+      return productTemplates.filter(t => t.name.toLowerCase().includes(q));
+    };
+
+    const selectBatchTemplate = (index, tpl) => {
+      if (batchProductList.value[index]) {
+        batchProductList.value[index].name = tpl.name;
+        batchProductList.value[index].sku = tpl.sku;
+        batchProductList.value[index].category = tpl.category;
+        batchProductList.value[index].price = tpl.price;
+        batchProductList.value[index].current_stock = 50;
+        batchProductList.value[index].safety_stock = tpl.safety_stock;
+        batchProductList.value[index].max_stock = tpl.max_stock;
+        batchProductList.value[index].reorder_qty = tpl.reorder_qty;
+        batchProductList.value[index].lead_time_days = tpl.lead_time_days;
+        batchProductList.value[index].supplier_id = tpl.supplier_id;
+      }
+      activeBatchSuggestionRow.value = -1;
+    };
+
     const addBatchRow = () => {
       batchProductList.value.push(createBlankProduct());
     };
@@ -1556,7 +1618,13 @@ window.vm = createApp({
       newSupplier,
       showAddSupplierModal,
       fetchSuppliers,
-      submitNewSupplier
+      submitNewSupplier,
+      showSingleSuggestions,
+      singleSuggestions,
+      selectSingleTemplate,
+      activeBatchSuggestionRow,
+      getBatchSuggestions,
+      selectBatchTemplate
     };
   }
 }).mount('#app');
