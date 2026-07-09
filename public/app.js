@@ -1,9 +1,7 @@
-const { createApp, ref, computed, onMounted, watch } = Vue;
-
-createApp({
+window.vm = createApp({
   setup() {
     // Nav & System status
-    const activeTab = ref('overview');
+    const activeTab = ref(window.location.pathname.includes('/saas-admin') ? 'admin' : 'overview');
     const systemStatus = ref('ETL Pipeline: Success');
     const systemStatusClass = ref('emerald');
     const activeTenantId = ref(new URLSearchParams(window.location.search).get('tenant_id') || 'tenant_001');
@@ -892,6 +890,7 @@ createApp({
       }
     };
 
+    // Tenants management actions
     const fetchTenants = async () => {
       try {
         const res = await fetch('/api/tenants');
