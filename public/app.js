@@ -864,6 +864,7 @@ window.vm = createApp({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-Tenant-ID': activeTenantId.value
           },
           body: JSON.stringify(payload)
@@ -932,6 +933,7 @@ window.vm = createApp({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-Tenant-ID': activeTenantId.value
           },
           body: JSON.stringify(newProductData.value)
@@ -965,11 +967,18 @@ window.vm = createApp({
           playPOSSound('success');
           await fetchLiveProducts();
         } else {
-          alert("Failed to create product: " + (data.message || JSON.stringify(data.errors || data)));
+          let errMsg = data.message || "Unknown validation error.";
+          if (data.errors) {
+            const list = Object.values(data.errors).flat();
+            if (list.length > 0) {
+              errMsg += "\n\nDetails:\n- " + list.join("\n- ");
+            }
+          }
+          alert("Failed to create product: " + errMsg);
         }
       } catch (err) {
         console.error("Error creating product:", err);
-        alert("Server communication error.");
+        alert("Server communication error. Please check formatting.");
       }
     };
 
@@ -989,6 +998,7 @@ window.vm = createApp({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-Tenant-ID': activeTenantId.value
           },
           body: JSON.stringify({ products: batchProductList.value })
@@ -1010,11 +1020,18 @@ window.vm = createApp({
           playPOSSound('success');
           await fetchLiveProducts();
         } else {
-          alert("Failed to create batch: " + (data.message || JSON.stringify(data.errors || data)));
+          let errMsg = data.message || "Unknown validation error.";
+          if (data.errors) {
+            const list = Object.values(data.errors).flat();
+            if (list.length > 0) {
+              errMsg += "\n\nDetails:\n- " + list.join("\n- ");
+            }
+          }
+          alert("Failed to create batch: " + errMsg);
         }
       } catch (err) {
         console.error("Error creating batch products:", err);
-        alert("Server communication error.");
+        alert("Server communication error. Please check formatting.");
       }
     };
 
@@ -1261,6 +1278,7 @@ window.vm = createApp({
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Accept': 'application/json',
               'X-Tenant-ID': activeTenantId.value
             },
             body: JSON.stringify(payload)

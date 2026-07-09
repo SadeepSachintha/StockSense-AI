@@ -33,14 +33,33 @@ class DatabaseSeeder extends Seeder
         // Resolve TenantManager and bind current session context
         app(TenantManager::class)->setTenantId('tenant_001');
 
-        // 2. Create Demo Supplier (idempotent)
-        $supplier = Supplier::firstOrCreate(
-            ['email' => 'orders@agribulk.com'],
+        // 2. Create Demo Suppliers (idempotent)
+        $s1 = Supplier::firstOrCreate(
+            ['id' => 1],
             [
                 'name' => 'AgriBulk Corp',
+                'email' => 'orders@agribulk.com',
                 'phone' => '+15550199'
             ]
         );
+        $s2 = Supplier::firstOrCreate(
+            ['id' => 2],
+            [
+                'name' => 'GrownOrganic Farms',
+                'email' => 'orders@grownorganic.com',
+                'phone' => '+15550299'
+            ]
+        );
+        $s3 = Supplier::firstOrCreate(
+            ['id' => 3],
+            [
+                'name' => 'VeggieDistributors',
+                'email' => 'orders@veggiedist.com',
+                'phone' => '+15550399'
+            ]
+        );
+
+        $supplier = $s1;
 
         // 3. Create Demo Products (idempotent)
         $rice = Product::firstOrCreate(
