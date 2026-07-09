@@ -87,13 +87,21 @@
             <path d="M6 9l6 6 6-6"/>
           </svg>
         </div>
-        <a href="/saas-admin" class="btn-primary" style="width:100%;margin-top:0.75rem;justify-content:center;font-size:0.8rem;gap:0.4rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)">
-          <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-          </svg>
-          SaaS Admin Panel
-        </a>
+        <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+          <a href="/saas-admin" class="btn-primary" style="flex:1;justify-content:center;font-size:0.7rem;gap:0.25rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);padding:0.45rem 0.2rem">
+            <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            SaaS Admin
+          </a>
+          <a href="/logout" class="btn-primary" style="flex:1;justify-content:center;font-size:0.7rem;gap:0.25rem;background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.25);color:#fb7185;padding:0.45rem 0.2rem">
+            <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+            </svg>
+            Logout
+          </a>
+        </div>
         <div class="branding-footer" style="margin-top: 1rem; text-align: center; font-size: 0.75rem; color: var(--text-muted);">
           A product of <a href="https://ss-labz.pages.dev/" target="_blank" style="color: var(--accent-purple); text-decoration: none; font-weight: 500; transition: color 0.3s;" onmouseover="this.style.color='#a78bfa'" onmouseout="this.style.color='#8b5cf6'">SS Labz</a>
         </div>
@@ -587,7 +595,16 @@
         
         <!-- Left Pane: Product Catalog -->
         <div class="card">
-          <h3 class="dashboard-card-title">Product Catalog</h3>
+          <h3 class="dashboard-card-title" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>Product Catalog</span>
+            <button class="btn-primary" style="padding:0.35rem 0.75rem;font-size:0.75rem;gap:0.35rem;background:var(--gradient-purple)" @click="showAddProductModal = true">
+              <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add Item
+            </button>
+          </h3>
           <div class="pos-catalog-grid">
             <div v-for="product in skus" :key="product.id" class="pos-product-card">
               <div>
@@ -939,6 +956,83 @@
       
       <div style="text-align:center;margin-top:20px;font-size:10px;">
         THANK YOU FOR YOUR BUSINESS!
+      </div>
+    <!-- Add Product Modal Overlay -->
+    <div class="modal-overlay" v-if="showAddProductModal">
+      <div class="receipt-modal" style="max-width: 500px; padding: 2.25rem;">
+        <div style="text-align:center;margin-bottom:1.5rem">
+          <div style="font-size:1.5rem;font-weight:800;font-family:var(--font-display);color:var(--accent-purple);">Add Product to Catalog</div>
+          <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.25rem;">Fill in the product details below. Scoped to the active tenant.</div>
+        </div>
+
+        <form @submit.prevent="submitNewProduct">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div>
+              <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Product Name</label>
+              <input type="text" class="admin-input" v-model="newProductData.name" placeholder="e.g. Organic Jasmine Rice" style="width:100%;box-sizing:border-box" required>
+            </div>
+            <div>
+              <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">SKU Code</label>
+              <input type="text" class="admin-input" v-model="newProductData.sku" placeholder="e.g. SKU-RICE-002" style="width:100%;box-sizing:border-box" required>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div>
+              <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Category</label>
+              <input type="text" class="admin-input" v-model="newProductData.category" placeholder="e.g. Grains" style="width:100%;box-sizing:border-box" required>
+            </div>
+            <div>
+              <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Price ($)</label>
+              <input type="number" step="0.01" min="0.01" class="admin-input" v-model.number="newProductData.price" style="width:100%;box-sizing:border-box" required>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:1rem">
+            <div>
+              <label style="font-size:0.7rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Initial Stock</label>
+              <input type="number" min="0" class="admin-input" v-model.number="newProductData.current_stock" style="width:100%;box-sizing:border-box" required>
+            </div>
+            <div>
+              <label style="font-size:0.7rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Safety Stock</label>
+              <input type="number" min="0" class="admin-input" v-model.number="newProductData.safety_stock" style="width:100%;box-sizing:border-box" required>
+            </div>
+            <div>
+              <label style="font-size:0.7rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Max Capacity</label>
+              <input type="number" min="1" class="admin-input" v-model.number="newProductData.max_stock" style="width:100%;box-sizing:border-box" required>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+            <div>
+              <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Reorder Qty</label>
+              <input type="number" min="1" class="admin-input" v-model.number="newProductData.reorder_qty" style="width:100%;box-sizing:border-box" required>
+            </div>
+            <div>
+              <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Lead Time (Days)</label>
+              <input type="number" min="1" class="admin-input" v-model.number="newProductData.lead_time_days" style="width:100%;box-sizing:border-box" required>
+            </div>
+          </div>
+
+          <div style="margin-bottom:1.5rem">
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Supplier Connection</label>
+            <select class="select-input" style="width:100%" v-model="newProductData.supplier_id" required>
+              <option value="" disabled>Select Supplier...</option>
+              <option value="1">AgriBulk Corp</option>
+              <option value="2">GrownOrganic Farms</option>
+              <option value="3">VeggieDistributors</option>
+            </select>
+          </div>
+
+          <div style="display:flex;gap:0.75rem">
+            <button type="button" class="btn-secondary" style="flex:1;justify-content:center;padding:0.65rem" @click="showAddProductModal = false">
+              Cancel
+            </button>
+            <button type="submit" class="btn-primary" style="flex:1;justify-content:center;padding:0.65rem;background:var(--gradient-purple)">
+              Create SKU Item
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 

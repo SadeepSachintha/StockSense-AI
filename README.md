@@ -207,10 +207,15 @@ Recently, StockSense AI underwent four core enterprise production upgrades:
 - **Zero-State Fallback:** Clicking the empty input displays the top 5 in-stock products for rapid selection.
 - **Keyboard-Only Terminal Navigation:** Managers can navigate selections with arrow keys and hit `Enter` to checkout entirely mouse-free.
 
-### C. SaaS Admin Control Panel Separation
+### C. SaaS Admin Control Panel Separation & Auth Portals
 - **Dedicated Route Isolation:** Moved tenant registration, subscription levels, and context switcher database scopes out of cashier layouts into a secure `/saas-admin` URL route.
-- **Bilateral Workspace Links:** Included quick links to switch between cashier and admin terminals in the sidebar footer.
+- **Authentication Redirection Gates:** Configured standalone, premium login screens at `/login` (multi-tenant cashier login) and `/saas-admin/login` (admin access console). Checks tenant and administrator states inside database tables and Laravel session contexts.
+- **Bilateral Workspace & Logout Links:** Placed side-by-side SaaS Admin, Cashier, and Logout session termination links in the sidebars of both dashboards.
 
 ### D. Multi-Model Forecast Overlays & Drift Autorecovery
 - **Algorithm Comparison Graph:** Plots LightGBM, Prophet (seasonal Fourier), and LSTM (deep learning recurrent) forecasting lines on Chart.js simultaneously. The selected active model is highlighted bold while overlay models display transparently.
 - **MLOps Drift Autorecovery Panel:** Allows setting a drift tolerance threshold. If simulated model drift exceeds this limit, the system automatically triggers the retrain DAG, streams logs, and reduces drift back to a 0.8% baseline.
+
+### E. Interactive Product Catalog Management
+- **Add Product UI Modal:** Added a popup form to add new products/SKUs to the catalog directly from the POS interface. Managers can easily configure product names, custom SKU keys, base pricing, initial inventory levels, safety threshold levels, reorder quantities, and supplier associations.
+- **RESTful Endpoint Integration:** Programmed a secure backend POST handler under `/api/products` mapping to [ProductForecastController.php](file:///d:/xampp/htdocs/StockSense%20AI/app/Http/Controllers/ProductForecastController.php) to seed new items cleanly in the Neon PostgreSQL database.

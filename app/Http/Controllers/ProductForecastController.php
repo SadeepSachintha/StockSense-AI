@@ -93,4 +93,40 @@ class ProductForecastController extends Controller
             ], 503);
         }
     }
+
+    /**
+     * Store a new product in the system.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'sku' => 'required|string|unique:products,sku',
+            'name' => 'required|string',
+            'category' => 'required|string',
+            'price' => 'required|numeric|min:0.01',
+            'current_stock' => 'required|integer|min:0',
+            'safety_stock' => 'required|integer|min:0',
+            'max_stock' => 'required|integer|min:1',
+            'reorder_qty' => 'required|integer|min:1',
+            'lead_time_days' => 'required|integer|min:1',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'elasticity' => 'nullable|numeric',
+        ]);
+
+        // Default elasticity mapping if not supplied
+        if (!isset($validated['elasticity'])) {
+            $validated['elasticity'] = -1.2; // typical retail elasticity coefficient
+        }
+
+        // Set tenant context automatically
+        $validated['tenant_id'] = session('tenant_id') ?? $request->header('X-Tenant-ID') ?? 'tenant_001';
+
+        $product = Product::create($validated);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Product added to POS catalog successfully.',
+            'data' => $product->load('supplier')
+        ], 201);
+    }
 }

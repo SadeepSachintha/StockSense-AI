@@ -22,6 +22,19 @@ window.vm = createApp({
     const activeSuggestionIndex = ref(-1);
     const activeModel = ref('lightgbm');
     const driftLimit = ref(5.0);
+    const showAddProductModal = ref(false);
+    const newProductData = ref({
+      sku: '',
+      name: '',
+      category: '',
+      price: 9.99,
+      current_stock: 50,
+      safety_stock: 15,
+      max_stock: 120,
+      reorder_qty: 40,
+      lead_time_days: 3,
+      supplier_id: ''
+    });
     const savedCapital = ref(12450);
     const stockoutRisks = ref(0);
     const wmapeAvg = ref(3.8);
@@ -892,6 +905,53 @@ window.vm = createApp({
       }
     };
 
+    const submitNewProduct = async () => {
+      try {
+        const res = await fetch(`/api/products?tenant_id=${activeTenantId.value}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Tenant-ID': activeTenantId.value
+          },
+          body: JSON.stringify(newProductData.value)
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          showAddProductModal.value = false;
+          
+          toastAlert.value = {
+            show: true,
+            title: "Product Created",
+            msg: `Successfully added ${newProductData.value.name} to the POS inventory catalog.`,
+            skuName: newProductData.value.sku,
+            channel: "Inventory Scope Manager"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 4000);
+
+          newProductData.value = {
+            sku: '',
+            name: '',
+            category: '',
+            price: 9.99,
+            current_stock: 50,
+            safety_stock: 15,
+            max_stock: 120,
+            reorder_qty: 40,
+            lead_time_days: 3,
+            supplier_id: ''
+          };
+
+          playPOSSound('success');
+          await fetchLiveProducts();
+        } else {
+          alert("Failed to create product: " + (data.message || JSON.stringify(data.errors || data)));
+        }
+      } catch (err) {
+        console.error("Error creating product:", err);
+        alert("Server communication error.");
+      }
+    };
+
     // Tenants management actions
     const fetchTenants = async () => {
       try {
@@ -1171,7 +1231,10 @@ window.vm = createApp({
       moveSuggestionActive,
       selectActiveSuggestion,
       activeModel,
-      driftLimit
+      driftLimit,
+      showAddProductModal,
+      newProductData,
+      submitNewProduct
     };
   }
 }).mount('#app');

@@ -8,6 +8,7 @@ use App\Http\Controllers\POSIngestController;
 use App\Http\Controllers\TenantController;
 
 Route::get('/products', [ProductForecastController::class, 'index']);
+Route::post('/products', [ProductForecastController::class, 'store']);
 Route::get('/products/{id}/forecast', [ProductForecastController::class, 'showForecast']);
 Route::post('/products/ingest', [POSIngestController::class, 'ingest']);
 
