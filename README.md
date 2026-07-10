@@ -234,3 +234,8 @@ Recently, StockSense AI underwent six core enterprise production upgrades:
 - **Administrative Tax Controls:** Allows SaaS operators to adjust each customer store's VAT rate inline in the Accounts table or during provisioning.
 - **Active Session Scoped Calculations:** The cashier terminal dynamically reads and applies the store's tax rates on checkouts and outputs correct percentages in printable invoices.
 - **Cross-Tab Settings Synchronization:** Implemented native HTML5 local storage synchronization event listeners across tabs. Setting updates (such as changing the VAT/tax rate to 0%) or switching context scopes in the SaaS Admin console immediately broadcasts and forces dynamic settings reloading on any open Cashier terminal instances in real-time.
+
+### G. POS Cash Register Shift Reconciliation & Payment Options
+- **Register Shift Gate:** Cashiers are blocked from POS operations until they open a register shift by entering a starting cash float (e.g. LKR 5,000). Lockout is dynamically synced across multiple terminal instances.
+- **Shift Reconciliation Audit Reports:** Cashiers can open the Active Register Shift report showing transaction cash, card, and QR split sales. To close the shift, they input the counted cash balance to calculate drawer discrepancy (shortage/overage) and print the audit summary report.
+- **Multi-Payment Checkout Selector:** Supports billing cash checkouts, credit cards, or mobile QR codes. Cash payment selection features a live cash-tendered/change-due calculator.
