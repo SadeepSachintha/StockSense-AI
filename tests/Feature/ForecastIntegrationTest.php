@@ -188,4 +188,44 @@ class ForecastIntegrationTest extends TestCase
         $this->assertEquals(100, $product->current_stock);
         $this->assertDatabaseCount('pos_transactions', 0);
     }
+
+    /**
+     * Test that we can update the price of a product for markdown promos.
+     *
+     * @test
+     */
+    public function it_can_update_product_price()
+    {
+        $tenant = Tenant::create([
+            'id' => 'tenant_123',
+            'name' => 'Test Tenant Retailers',
+            'subscription_tier' => 'basic',
+            'status' => 'active'
+        ]);
+
+        $product = Product::create([
+            'tenant_id' => 'tenant_123',
+            'sku' => 'SKU-PRICE-TEST',
+            'name' => 'Discount Item',
+            'category' => 'Agri',
+            'price' => 100.00,
+            'current_stock' => 50,
+            'safety_stock' => 10,
+            'max_stock' => 100,
+            'reorder_qty' => 20,
+            'lead_time_days' => 3
+        ]);
+
+        $response = $this->withHeaders([
+            'X-Tenant-ID' => 'tenant_123'
+        ])->putJson("/api/products/{$product->id}/price", [
+            'price' => 85.00
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['status' => 'success']);
+
+        $product->refresh();
+        $this->assertEquals(85.00, (float)$product->price);
+    }
 }

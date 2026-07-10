@@ -25,10 +25,12 @@ class Product extends Model
         'lead_time_days',
         'supplier_id',
         'wmape',
+        'cost_price',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'cost_price' => 'decimal:2',
         'elasticity' => 'decimal:2',
         'wmape' => 'decimal:2',
         'current_stock' => 'integer',

@@ -400,6 +400,7 @@ window.vm = createApp({
             name: p.name,
             category: p.category,
             price: parseFloat(p.price),
+            costPrice: p.cost_price ? parseFloat(p.cost_price) : parseFloat(p.price) * 0.7,
             elasticity: parseFloat(p.elasticity),
             currentStock: parseInt(p.current_stock),
             safetyStock: parseInt(p.safety_stock),
@@ -1637,6 +1638,137 @@ window.vm = createApp({
       }
     };
 
+    // Product Performance Analytics Computeds
+    const flatTransactions = computed(() => {
+      return transactionHistory.value.flatMap(receipt => {
+        return receipt.items.map(item => ({
+          ...item,
+          receiptId: receipt.id,
+          time: receipt.time,
+          discount: receipt.discount,
+          tax: receipt.tax,
+          paymentMethod: receipt.payment_method
+        }));
+      });
+    });
+
+    const skuSales = computed(() => {
+      const sales = {};
+      skus.value.forEach(p => {
+        sales[p.sku] = {
+          id: p.id,
+          sku: p.sku,
+          name: p.name,
+          price: p.price,
+          costPrice: p.costPrice || (p.price * 0.7),
+          quantity: 0,
+          revenue: 0,
+          profit: 0
+        };
+      });
+
+      flatTransactions.value.forEach(tx => {
+        if (sales[tx.sku]) {
+          sales[tx.sku].quantity += tx.quantity;
+          sales[tx.sku].revenue += tx.subtotal;
+          const cost = sales[tx.sku].costPrice;
+          sales[tx.sku].profit += tx.quantity * (tx.price - cost);
+        }
+      });
+
+      return Object.values(sales);
+    });
+
+    const topSellingProducts = computed(() => {
+      return [...skuSales.value]
+        .filter(s => s.quantity > 0)
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 5);
+    });
+
+    const slowMovingItems = computed(() => {
+      return skuSales.value
+        .filter(s => s.quantity < 5)
+        .map(s => {
+          const prod = skus.value.find(p => p.sku === s.sku);
+          return {
+            id: s.id,
+            sku: s.sku,
+            name: s.name,
+            price: s.price,
+            quantitySold: s.quantity,
+            currentStock: prod ? prod.currentStock : 0,
+          };
+        });
+    });
+
+    const analyticsKPIs = computed(() => {
+      let totalRevenue = 0;
+      let totalProfit = 0;
+      let totalCOGS = 0;
+
+      flatTransactions.value.forEach(tx => {
+        totalRevenue += tx.subtotal;
+        const prod = skus.value.find(p => p.sku === tx.sku);
+        const costPrice = prod ? (prod.costPrice || (prod.price * 0.7)) : (tx.price * 0.7);
+        const cost = costPrice * tx.quantity;
+        totalCOGS += cost;
+        totalProfit += (tx.subtotal - cost);
+      });
+
+      let totalInventoryCost = 0;
+      skus.value.forEach(p => {
+        const cost = p.costPrice || (p.price * 0.7);
+        totalInventoryCost += p.currentStock * cost;
+      });
+
+      const turnoverRatio = totalInventoryCost > 0 ? (totalCOGS / totalInventoryCost) : 0;
+      const averageMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+
+      return {
+        totalRevenue,
+        totalProfit,
+        averageMargin,
+        turnoverRatio,
+        totalInventoryValue: totalInventoryCost
+      };
+    });
+
+    const applyMarkdown = async (productId, percent) => {
+      const prod = skus.value.find(p => p.id === productId.toString());
+      if (!prod) return;
+      const originalPrice = prod.price;
+      const discountedPrice = Math.round(originalPrice * (1 - percent / 100));
+
+      try {
+        const res = await fetch(`/api/products/${productId}/price?tenant_id=${activeTenantId.value}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Tenant-ID': activeTenantId.value
+          },
+          body: JSON.stringify({ price: discountedPrice })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          playPOSSound('success');
+          toastAlert.value = {
+            show: true,
+            title: "Promotion Markdown Applied",
+            msg: `Price of ${prod.name} successfully discounted by ${percent}% (from LKR ${originalPrice.toFixed(2)} to LKR ${discountedPrice.toFixed(2)}).`,
+            channel: "System Engine"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 6000);
+          await fetchLiveProducts();
+        } else {
+          alert("Error applying markdown: " + data.message);
+        }
+      } catch (err) {
+        console.error("Error applying markdown price:", err);
+      }
+    };
+
     const voidTransaction = async (receiptId) => {
       if (!confirm(`Are you sure you want to void transaction ${receiptId}? This will delete the sale records and refund all items back into store inventory.`)) {
         return;
@@ -1930,7 +2062,12 @@ window.vm = createApp({
       barcodeModalProduct,
       barcodePrintQty,
       openBarcodeModal,
-      getBarcodeSVG
+      getBarcodeSVG,
+      topSellingProducts,
+      slowMovingItems,
+      skuSales,
+      analyticsKPIs,
+      applyMarkdown
     };
   }
 }).mount('#app');

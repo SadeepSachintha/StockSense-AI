@@ -237,4 +237,26 @@ class ProductForecastController extends Controller
             'data' => $product->load('supplier')
         ]);
     }
+
+    /**
+     * Update product retail price.
+     */
+    public function updatePrice(Request $request, string $id): JsonResponse
+    {
+        $product = Product::findOrFail($id);
+
+        $validated = $request->validate([
+            'price' => 'required|numeric|min:0.01',
+        ]);
+
+        $product->update([
+            'price' => $validated['price']
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Product price updated successfully.',
+            'data' => $product
+        ]);
+    }
 }
