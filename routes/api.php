@@ -12,6 +12,8 @@ Route::post('/products', [ProductForecastController::class, 'store']);
 Route::get('/products/{id}/forecast', [ProductForecastController::class, 'showForecast']);
 Route::put('/products/{id}/replenish', [ProductForecastController::class, 'replenish']);
 Route::post('/products/ingest', [POSIngestController::class, 'ingest']);
+Route::get('/transactions', [POSIngestController::class, 'index']);
+Route::delete('/transactions/{receipt_id}', [POSIngestController::class, 'destroy']);
 
 // Supplier Management Routes
 Route::get('/suppliers', [\App\Http\Controllers\SupplierController::class, 'index']);

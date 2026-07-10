@@ -24,10 +24,15 @@ class PosTransaction extends Model
         'price_sold',
         'transaction_date',
         'created_at',
+        'receipt_id',
+        'discount_amount',
+        'tax_amount',
     ];
 
     protected $casts = [
         'price_sold' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
         'quantity' => 'integer',
         'transaction_date' => 'datetime',
         'created_at' => 'datetime',

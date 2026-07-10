@@ -597,13 +597,22 @@
         <div class="card">
           <h3 class="dashboard-card-title" style="display:flex;justify-content:space-between;align-items:center;">
             <span>Product Catalog</span>
-            <button class="btn-primary" style="padding:0.35rem 0.75rem;font-size:0.75rem;gap:0.35rem;background:var(--gradient-purple)" @click="showAddProductModal = true">
-              <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              Add Item
-            </button>
+            <div style="display:flex;gap:0.5rem">
+              <button type="button" class="btn-secondary" style="padding:0.35rem 0.75rem;font-size:0.75rem;display:inline-flex;align-items:center;gap:0.35rem;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:var(--text-secondary)" @click="showHistoryPanel = true">
+                <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Sales History
+              </button>
+              <button class="btn-primary" style="padding:0.35rem 0.75rem;font-size:0.75rem;gap:0.35rem;background:var(--gradient-purple)" @click="showAddProductModal = true">
+                <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Add Item
+              </button>
+            </div>
           </h3>
           <div class="pos-catalog-grid">
             <div v-for="product in skus" :key="product.id" class="pos-product-card">
@@ -1026,6 +1035,68 @@
       
       <div style="text-align:center;margin-top:20px;font-size:10px;">
         THANK YOU FOR YOUR BUSINESS!
+      </div>
+    </div>
+
+    <!-- Transaction History Modal Overlay -->
+    <div class="modal-overlay" v-if="showHistoryPanel">
+      <div class="receipt-modal" style="max-width:800px;width:100%;padding:2.25rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+          <h2 style="font-family:'Outfit';font-weight:700;font-size:1.5rem;margin:0;color:var(--text-primary);display:inline-flex;align-items:center;gap:0.5rem">
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Today's Transaction History
+          </h2>
+          <button type="button" @click="showHistoryPanel = false" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;">
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <div v-if="transactionHistory.length === 0" style="text-align:center;padding:4rem 0;color:var(--text-muted);">
+          <svg style="width:48px;height:48px;margin:0 auto 1rem;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <div>No transactions recorded yet today.</div>
+        </div>
+
+        <div v-else style="max-height:480px;overflow-y:auto;padding-right:0.5rem">
+          <div v-for="receipt in transactionHistory" :key="receipt.id" class="card" style="background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:1rem;margin-bottom:1rem">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;flex-wrap:wrap;gap:0.5rem">
+              <div>
+                <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem">@{{ receipt.id }}</span>
+                <span style="font-size:0.75rem;color:var(--text-muted);margin-left:0.5rem">@{{ new Date(receipt.time).toLocaleTimeString() }}</span>
+              </div>
+              <div style="display:flex;gap:0.4rem;align-items:center">
+                <strong style="color:var(--accent-emerald);font-size:1.05rem;margin-right:0.5rem">LKR @{{ receipt.total.toFixed(2) }}</strong>
+                <button type="button" class="btn-mini" style="padding:0.35rem 0.65rem;border-radius:4px;font-size:0.7rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:var(--text-secondary);cursor:pointer;" @click="reprintReceipt(receipt)">
+                  Reprint
+                </button>
+                <button type="button" class="btn-mini danger" style="padding:0.35rem 0.65rem;border-radius:4px;font-size:0.7rem;cursor:pointer;" @click="voidTransaction(receipt.id)">
+                  Void
+                </button>
+              </div>
+            </div>
+
+            <!-- Items list inside the history card -->
+            <div style="background:rgba(0,0,0,0.2);border-radius:6px;padding:0.5rem 0.75rem;font-size:0.8rem;color:var(--text-secondary)">
+              <div v-for="item in receipt.items" :key="item.sku" style="display:flex;justify-content:space-between;margin-bottom:0.25rem">
+                <span>@{{ item.name }} (x@{{ item.quantity }})</span>
+                <span>LKR @{{ item.subtotal.toFixed(2) }}</span>
+              </div>
+              <div style="border-top:1px dashed rgba(255,255,255,0.08);margin-top:0.4rem;padding-top:0.4rem;display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted)">
+                <span>Subtotal: LKR @{{ receipt.subtotal.toFixed(2) }} | Discount: LKR @{{ receipt.discount.toFixed(2) }} | Tax: LKR @{{ receipt.tax.toFixed(2) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

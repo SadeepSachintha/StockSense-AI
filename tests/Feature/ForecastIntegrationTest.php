@@ -127,4 +127,65 @@ class ForecastIntegrationTest extends TestCase
 
         $this->assertDatabaseCount('pos_transactions', 1);
     }
+
+    /** @test */
+    public function it_can_fetch_and_void_transactions(): void
+    {
+        $tenant = Tenant::create([
+            'id' => 'tenant_123',
+            'name' => 'Test Tenant Retailers',
+            'subscription_tier' => 'basic',
+            'status' => 'active'
+        ]);
+
+        $product = Product::create([
+            'tenant_id' => 'tenant_123',
+            'sku' => 'SKU-TEST-VOID',
+            'name' => 'Test Product',
+            'category' => 'Test',
+            'price' => 10.00,
+            'current_stock' => 100,
+            'safety_stock' => 10,
+            'max_stock' => 200,
+            'reorder_qty' => 50,
+            'lead_time_days' => 2
+        ]);
+
+        // Ingest transaction
+        $response = $this->withHeaders(['X-Tenant-ID' => 'tenant_123'])
+            ->postJson('/api/products/ingest', [
+                'receipt_id' => 'TX-VOID-ME',
+                'discount_amount' => 5.00,
+                'tax_amount' => 1.50,
+                'transactions' => [
+                    [
+                        'sku' => 'SKU-TEST-VOID',
+                        'quantity' => 10, // Stock goes to 90
+                        'price_sold' => 10.00,
+                        'transaction_date' => '2026-07-08 18:00:00'
+                    ]
+                ]
+            ]);
+
+        $response->assertStatus(200);
+
+        // Fetch transaction history
+        $historyResponse = $this->withHeaders(['X-Tenant-ID' => 'tenant_123'])
+            ->getJson('/api/transactions');
+
+        $historyResponse->assertStatus(200);
+        $historyResponse->assertJsonFragment(['id' => 'TX-VOID-ME']);
+
+        // Void the transaction
+        $voidResponse = $this->withHeaders(['X-Tenant-ID' => 'tenant_123'])
+            ->deleteJson('/api/transactions/TX-VOID-ME');
+
+        $voidResponse->assertStatus(200);
+        $voidResponse->assertJsonFragment(['status' => 'success']);
+
+        // Confirm stock is refunded
+        $product->refresh();
+        $this->assertEquals(100, $product->current_stock);
+        $this->assertDatabaseCount('pos_transactions', 0);
+    }
 }

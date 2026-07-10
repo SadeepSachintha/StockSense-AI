@@ -872,16 +872,7 @@ window.vm = createApp({
         subtotal: item.product.price * item.quantity
       }));
 
-      const payload = {
-        transactions: cart.value.map(item => ({
-          sku: item.product.sku,
-          quantity: item.quantity,
-          price_sold: item.product.price,
-          transaction_date: new Date().toISOString().slice(0, 19).replace('T', ' ')
-        }))
-      };
-
-      // Construct Receipt details
+      // Construct Receipt details first
       const receipt = {
         id: 'TX-' + Math.floor(100000 + Math.random() * 900000),
         time: new Date().toLocaleString(),
@@ -892,6 +883,18 @@ window.vm = createApp({
         tax: taxVal,
         total: totalVal,
         isOffline: !isOnline.value
+      };
+
+      const payload = {
+        receipt_id: receipt.id,
+        discount_amount: receipt.discount,
+        tax_amount: receipt.tax,
+        transactions: cart.value.map(item => ({
+          sku: item.product.sku,
+          quantity: item.quantity,
+          price_sold: item.product.price,
+          transaction_date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+        }))
       };
 
       if (!isOnline.value) {
@@ -960,8 +963,9 @@ window.vm = createApp({
           };
           setTimeout(() => { toastAlert.value.show = false; }, 4000);
           
-          // Reload products list
+          // Reload products list & transaction history
           await fetchLiveProducts();
+          await fetchTransactionHistory();
         } else {
           alert("Checkout failed: " + data.message);
           systemStatus.value = "Checkout failed.";
@@ -1458,6 +1462,63 @@ window.vm = createApp({
       await fetchActiveTenantSettings();
       await fetchSuppliers();
       await fetchLiveProducts();
+      await fetchTransactionHistory();
+    };
+
+    const transactionHistory = ref([]);
+    const showHistoryPanel = ref(false);
+
+    const fetchTransactionHistory = async () => {
+      try {
+        const res = await fetch(`/api/transactions?tenant_id=${activeTenantId.value}`);
+        const data = await res.json();
+        if (data.status === 'success') {
+          transactionHistory.value = data.data;
+        }
+      } catch (err) {
+        console.error("Error fetching transactions:", err);
+      }
+    };
+
+    const voidTransaction = async (receiptId) => {
+      if (!confirm(`Are you sure you want to void transaction ${receiptId}? This will delete the sale records and refund all items back into store inventory.`)) {
+        return;
+      }
+      
+      try {
+        const res = await fetch(`/api/transactions/${receiptId}?tenant_id=${activeTenantId.value}`, {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json',
+            'X-Tenant-ID': activeTenantId.value
+          }
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          toastAlert.value = {
+            show: true,
+            title: "Transaction Voided",
+            msg: `Receipt ${receiptId} was voided. Items returned to inventory.`,
+            skuName: receiptId,
+            channel: "POS Auditing"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 4000);
+          
+          playPOSSound('trash');
+          await fetchTransactionHistory();
+          await fetchLiveProducts();
+        } else {
+          alert("Failed to void transaction: " + data.message);
+        }
+      } catch (err) {
+        console.error("Error voiding transaction:", err);
+        alert("Server communication error.");
+      }
+    };
+
+    const reprintReceipt = (receipt) => {
+      receiptData.value = receipt;
+      showReceiptModal.value = true;
     };
 
     const printReceipt = () => {
@@ -1515,6 +1576,7 @@ window.vm = createApp({
       await fetchActiveTenantSettings();
       await fetchSuppliers();
       await fetchLiveProducts();
+      await fetchTransactionHistory();
 
       // Listen to storage sync events across open tabs/panels
       window.addEventListener('storage', async (event) => {
@@ -1529,6 +1591,7 @@ window.vm = createApp({
           await fetchActiveTenantSettings();
           await fetchSuppliers();
           await fetchLiveProducts();
+          await fetchTransactionHistory();
         }
       });
 
@@ -1686,7 +1749,12 @@ window.vm = createApp({
       productTemplates,
       handleSingleNameInput,
       handleBatchNameInput,
-      combinedCatalogSuggestions
+      combinedCatalogSuggestions,
+      transactionHistory,
+      showHistoryPanel,
+      fetchTransactionHistory,
+      voidTransaction,
+      reprintReceipt
     };
   }
 }).mount('#app');
