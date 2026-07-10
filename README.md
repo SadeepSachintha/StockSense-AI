@@ -239,3 +239,7 @@ Recently, StockSense AI underwent six core enterprise production upgrades:
 - **Register Shift Gate:** Cashiers are blocked from POS operations until they open a register shift by entering a starting cash float (e.g. LKR 5,000). Lockout is dynamically synced across multiple terminal instances.
 - **Shift Reconciliation Audit Reports:** Cashiers can open the Active Register Shift report showing transaction cash, card, and QR split sales. To close the shift, they input the counted cash balance to calculate drawer discrepancy (shortage/overage) and print the audit summary report.
 - **Multi-Payment Checkout Selector:** Supports billing cash checkouts, credit cards, or mobile QR codes. Cash payment selection features a live cash-tendered/change-due calculator.
+
+### H. POS Printable Barcode Sticker Generator
+- **Offline Code39 Encoder:** Custom Vector SVG barcode renderer implemented in pure client-side Javascript. Draws clean vector lines matching alphanumeric SKU values without requiring external scripts or API queries.
+- **Dynamic Sticker Layout Configurations:** Cashiers can generate barcodes directly from product cards. Supports switching formats between printing a single product label or printing a full sheet of 30 barcode stickers (aligned 3-across, 10-down on standard A4 template paper).
