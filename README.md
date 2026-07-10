@@ -243,3 +243,9 @@ Recently, StockSense AI underwent six core enterprise production upgrades:
 ### H. POS Printable Barcode Sticker Generator
 - **Offline Code39 Encoder:** Custom Vector SVG barcode renderer implemented in pure client-side Javascript. Draws clean vector lines matching alphanumeric SKU values without requiring external scripts or API queries.
 - **Dynamic Sticker Layout Configurations:** Cashiers can generate barcodes directly from product cards. Supports switching formats between printing a single product label or printing a full sheet of 30 barcode stickers (aligned 3-across, 10-down on standard A4 template paper).
+
+### I. Product Performance Analytics & Promotions
+- **Gross Profit Margin & Cost Base Tracking:** Added a customizable `cost_price` (wholesale cost) attribute to catalog items to accurately monitor gross margins and calculate COGS dynamically.
+- **Dynamic Retail Analytics KPIs:** Summarizes total sales revenue, net profit margins, average profit percentage, and annualized inventory turnover ratios.
+- **Top Performing SKUs & Progress Tracking:** Visualizes top products ranked by sales turnover with dynamic visual progress percentage charts.
+- **Slow-Moving Inventory Markdown Engine:** Detects low velocity inventory and exposes action items to instantly apply promotional 10%, 15%, or 20% markdowns directly to the POS catalog to stimulate stock velocity.
