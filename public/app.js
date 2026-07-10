@@ -1154,7 +1154,7 @@ window.vm = createApp({
         'Product Name',
         'SKU Code',
         'Category',
-        'Price ($)',
+        'Price (LKR)',
         'Stock',
         'Safety Stock',
         'Max Capacity',

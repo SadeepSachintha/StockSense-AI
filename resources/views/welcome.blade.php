@@ -158,9 +158,9 @@
               </svg>
             </div>
           </div>
-          <div class="card-value">$@{{ savedCapital.toLocaleString() }}</div>
+          <div class="card-value">LKR @{{ savedCapital.toLocaleString() }}</div>
           <div class="card-subtext">
-            <span class="trend-badge positive">+$340 today</span>
+            <span class="trend-badge positive">+LKR 340 today</span>
             <span>from holding optimizations</span>
           </div>
         </div>
@@ -330,7 +330,7 @@
               </div>
               <div style="display:flex;justify-content:space-between;margin-top:0.4rem">
                 <span style="font-size:0.85rem">Base Retail Price:</span>
-                <strong>$@{{ selectedSku.price.toFixed(2) }}</strong>
+                <strong>LKR @{{ selectedSku.price.toFixed(2) }}</strong>
               </div>
             </div>
           </div>
@@ -355,7 +355,7 @@
 
             <div class="elasticity-result">
               <span>Adjusted SKU Price:</span>
-              <strong style="color:var(--text-primary)">$@{{ simulatedPrice }}</strong>
+              <strong style="color:var(--text-primary)">LKR @{{ simulatedPrice }}</strong>
             </div>
             
             <div class="elasticity-result" style="border:none;margin-top:0.25rem">
@@ -580,7 +580,7 @@
                   <span class="badge" :class="product.currentStock > 10 ? 'success' : 'warning'" style="font-size: 0.65rem; padding: 0.1rem 0.35rem; border-radius: 4px;">
                     @{{ product.currentStock }} in stock
                   </span>
-                  <span class="suggestion-price">$@{{ product.price.toFixed(2) }}</span>
+                  <span class="suggestion-price">LKR @{{ product.price.toFixed(2) }}</span>
                 </div>
               </div>
             </div>
@@ -614,7 +614,7 @@
               </div>
               
               <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;">
-                <div class="pos-product-price">$@{{ product.price.toFixed(2) }}</div>
+                <div class="pos-product-price">LKR @{{ product.price.toFixed(2) }}</div>
                 <div>
                   <span v-if="product.currentStock <= 0" class="badge danger">Out of Stock</span>
                   <span v-else-if="product.currentStock <= product.safetyStock" class="badge warning">Low Stock (@{{ product.currentStock }})</span>
@@ -656,7 +656,7 @@
               <div v-for="item in cart" :key="item.product.id" class="cart-item-row">
                 <div style="flex:1;padding-right:0.5rem;">
                   <div style="font-weight:600;font-size:0.85rem;">@{{ item.product.name }}</div>
-                  <div style="font-size:0.75rem;color:var(--text-muted);">$@{{ item.product.price.toFixed(2) }} each</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">LKR @{{ item.product.price.toFixed(2) }} each</div>
                 </div>
 
                 <div class="qty-counter">
@@ -666,7 +666,7 @@
                 </div>
 
                 <div style="min-width:60px;text-align:right;font-weight:600;font-size:0.85rem;margin-left:0.75rem;">
-                  $@{{ (item.product.price * item.quantity).toFixed(2) }}
+                  LKR @{{ (item.product.price * item.quantity).toFixed(2) }}
                 </div>
 
                 <button 
@@ -688,7 +688,7 @@
               <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.025em;display:flex;justify-content:space-between;align-items:center;">
                 <span>Cart Discount</span>
                 <span v-if="discountValue > 0" style="color:#fb7185;font-weight:700;">
-                  - $@{{ discountAmount.toFixed(2) }}
+                  - LKR @{{ discountAmount.toFixed(2) }}
                 </span>
               </div>
               <div style="display:flex;gap:0.5rem;">
@@ -707,7 +707,7 @@
                     :style="discountType === 'value' ? 'background:var(--accent-purple);color:#fff;' : 'background:transparent;color:var(--text-secondary);'"
                     @click="discountType = 'value'"
                   >
-                    $
+                    LKR
                   </button>
                 </div>
                 <div style="position:relative;flex:1;">
@@ -721,7 +721,7 @@
                     v-model.number="discountValue"
                   >
                   <span style="position:absolute;right:0.6rem;top:50%;transform:translateY(-50%);font-size:0.75rem;color:var(--text-muted);pointer-events:none;">
-                    @{{ discountType === 'percent' ? '%' : '$' }}
+                    @{{ discountType === 'percent' ? '%' : 'LKR' }}
                   </span>
                 </div>
               </div>
@@ -730,19 +730,19 @@
             <div class="cart-totals-section">
               <div style="display:flex;justify-content:space-between;">
                 <span style="color:var(--text-secondary);">Subtotal:</span>
-                <strong>$@{{ cartSubtotal.toFixed(2) }}</strong>
+                <strong>LKR @{{ cartSubtotal.toFixed(2) }}</strong>
               </div>
               <div v-if="discountValue > 0" style="display:flex;justify-content:space-between;color:#fb7185;">
-                <span>Discount (@{{ discountType === 'percent' ? discountValue + '%' : '$' + discountValue }}):</span>
-                <strong>- $@{{ discountAmount.toFixed(2) }}</strong>
+                <span>Discount (@{{ discountType === 'percent' ? discountValue + '%' : 'LKR ' + discountValue }}):</span>
+                <strong>- LKR @{{ discountAmount.toFixed(2) }}</strong>
               </div>
               <div style="display:flex;justify-content:space-between;">
                 <span style="color:var(--text-secondary);">VAT / Tax (@{{ activeTenantTaxRate }}%):</span>
-                <strong>$@{{ cartTax.toFixed(2) }}</strong>
+                <strong>LKR @{{ cartTax.toFixed(2) }}</strong>
               </div>
               <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.05);padding-top:0.5rem;font-size:1.05rem;color:var(--text-primary);">
                 <span>Total Amount:</span>
-                <strong style="color:var(--accent-emerald);">$@{{ cartTotal.toFixed(2) }}</strong>
+                <strong style="color:var(--accent-emerald);">LKR @{{ cartTotal.toFixed(2) }}</strong>
               </div>
             </div>
 
@@ -935,7 +935,7 @@
         <div style="display:flex;flex-direction:column;gap:0.5rem;max-height:150px;overflow-y:auto;margin:1rem 0;">
           <div v-for="item in receiptData.items" :key="item.sku" style="display:flex;justify-content:space-between;font-size:0.85rem;">
             <span>@{{ item.name }} (x@{{ item.quantity }})</span>
-            <strong style="color:var(--text-primary);">$@{{ item.subtotal.toFixed(2) }}</strong>
+            <strong style="color:var(--text-primary);">LKR @{{ item.subtotal.toFixed(2) }}</strong>
           </div>
         </div>
 
@@ -944,19 +944,19 @@
         <div style="font-size:0.85rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:0.35rem;">
           <div style="display:flex;justify-content:space-between;">
             <span>Subtotal:</span>
-            <span style="color:var(--text-primary);">$@{{ receiptData.subtotal.toFixed(2) }}</span>
+            <span style="color:var(--text-primary);">LKR @{{ receiptData.subtotal.toFixed(2) }}</span>
           </div>
           <div v-if="receiptData.discount > 0" style="display:flex;justify-content:space-between;color:#fb7185;">
             <span>Discount Applied:</span>
-            <strong>- $@{{ receiptData.discount.toFixed(2) }}</strong>
+            <strong>- LKR @{{ receiptData.discount.toFixed(2) }}</strong>
           </div>
           <div style="display:flex;justify-content:space-between;">
             <span>VAT / Tax (@{{ activeTenantTaxRate }}%):</span>
-            <span style="color:var(--text-primary);">$@{{ receiptData.tax.toFixed(2) }}</span>
+            <span style="color:var(--text-primary);">LKR @{{ receiptData.tax.toFixed(2) }}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:1.1rem;color:var(--text-primary);border-top:1px solid rgba(255,255,255,0.05);padding-top:0.5rem;margin-top:0.25rem;">
             <span>Total Paid:</span>
-            <strong style="color:var(--accent-emerald);">$@{{ receiptData.total.toFixed(2) }}</strong>
+            <strong style="color:var(--accent-emerald);">LKR @{{ receiptData.total.toFixed(2) }}</strong>
           </div>
         </div>
 
@@ -987,26 +987,26 @@
       <div style="margin:10px 0;">
         <div v-for="item in receiptData.items" :key="item.sku" style="display:flex;justify-content:space-between;">
           <span>@{{ item.name.toUpperCase() }} x@{{ item.quantity }}</span>
-          <span>$@{{ item.subtotal.toFixed(2) }}</span>
+          <span>LKR @{{ item.subtotal.toFixed(2) }}</span>
         </div>
       </div>
       
       <div>========================================</div>
       <div style="display:flex;justify-content:space-between;">
         <span>SUBTOTAL</span>
-        <span>$@{{ receiptData.subtotal.toFixed(2) }}</span>
+        <span>LKR @{{ receiptData.subtotal.toFixed(2) }}</span>
       </div>
       <div v-if="receiptData.discount > 0" style="display:flex;justify-content:space-between;">
         <span>DISCOUNT</span>
-        <span>- $@{{ receiptData.discount.toFixed(2) }}</span>
+        <span>- LKR @{{ receiptData.discount.toFixed(2) }}</span>
       </div>
       <div style="display:flex;justify-content:space-between;">
         <span>VAT / TAX (@{{ activeTenantTaxRate }}%)</span>
-        <span>$@{{ receiptData.tax.toFixed(2) }}</span>
+        <span>LKR @{{ receiptData.tax.toFixed(2) }}</span>
       </div>
       <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;margin-top:5px;">
         <span>TOTAL PAID</span>
-        <span>$@{{ receiptData.total.toFixed(2) }}</span>
+        <span>LKR @{{ receiptData.total.toFixed(2) }}</span>
       </div>
       <div>========================================</div>
       
@@ -1074,7 +1074,7 @@
               <input type="text" class="admin-input" v-model="newProductData.category" placeholder="e.g. Grains" style="width:100%;box-sizing:border-box" required>
             </div>
             <div>
-              <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Price ($)</label>
+              <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Price (LKR)</label>
               <input type="number" step="0.01" min="0.01" class="admin-input" v-model.number="newProductData.price" style="width:100%;box-sizing:border-box" required>
             </div>
           </div>
@@ -1183,7 +1183,7 @@
                   <th style="min-width: 140px; font-size: 0.75rem;">Product Name</th>
                   <th style="min-width: 110px; font-size: 0.75rem;">SKU Code</th>
                   <th style="min-width: 90px; font-size: 0.75rem;">Category</th>
-                  <th style="width: 80px; font-size: 0.75rem;">Price ($)</th>
+                  <th style="width: 80px; font-size: 0.75rem;">Price (LKR)</th>
                   <th style="width: 70px; font-size: 0.75rem;">Stock</th>
                   <th style="width: 70px; font-size: 0.75rem;">Safety</th>
                   <th style="width: 70px; font-size: 0.75rem;">Max</th>
