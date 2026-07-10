@@ -522,7 +522,7 @@
                       style="font-size:0.75rem;padding:0.4rem 0.8rem;margin-left:auto"
                       :disabled="sku.restockStatus === 'Dispatched' || sku.restockStatus === 'Confirmed'"
                       :style="{ opacity: (sku.restockStatus === 'Dispatched' || sku.restockStatus === 'Confirmed') ? 0.6 : 1 }"
-                      @click="sendRestockAlert(sku)"
+                      @click="openPOModal(sku)"
                     >
                       <svg v-if="sku.alertChannel === 'WhatsApp'" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2">
                         <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
@@ -535,6 +535,74 @@
                          sku.restockStatus === 'Low Stock' ? 'Trigger PO Alert' : 
                          sku.restockStatus === 'Dispatched' ? 'Pending Supplier...' : 'Supplier Confirmed' }}
                     </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Purchase Orders Log Panel -->
+        <div class="card" style="margin-top: 2rem;">
+          <h3 class="dashboard-card-title">
+            <span>Supplier Purchase Orders (PO) Log</span>
+            <span class="badge" style="background:rgba(168,85,247,0.15); color:var(--accent-purple);">Audit Trail</span>
+          </h3>
+          <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1.5rem">
+            Tracks outgoing orders sent to suppliers. Mark orders as received to automatically restock product inventory.
+          </p>
+
+          <div v-if="purchaseOrders.length === 0" style="text-align:center; padding:3rem 0; color:var(--text-muted);">
+            <svg style="width:48px;height:48px;stroke:currentColor;fill:none;stroke-width:1.5;margin-bottom:1rem;opacity:0.3;" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            No purchase orders dispatched yet.
+          </div>
+
+          <div v-else class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>PO ID</th>
+                  <th>Product SKU</th>
+                  <th>Supplier</th>
+                  <th>Quantity</th>
+                  <th>Status</th>
+                  <th>Dispatched At</th>
+                  <th style="text-align:right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="po in purchaseOrders" :key="po.id">
+                  <td><strong>#PO-@{{ po.id }}</strong></td>
+                  <td>
+                    <div>
+                      <strong>@{{ po.product ? po.product.name : 'Unknown Product' }}</strong>
+                      <span class="sku-code" style="display:block; font-size:0.75rem;">@{{ po.product ? po.product.sku : '' }}</span>
+                    </div>
+                  </td>
+                  <td>@{{ po.supplier ? po.supplier.name : 'Unknown Supplier' }}</td>
+                  <td><strong>@{{ po.quantity }} units</strong></td>
+                  <td>
+                    <span v-if="po.status === 'dispatched'" class="badge warning">Dispatched</span>
+                    <span v-else-if="po.status === 'received'" class="badge success">Stock Received</span>
+                  </td>
+                  <td>@{{ new Date(po.created_at).toLocaleString() }}</td>
+                  <td style="text-align:right">
+                    <button 
+                      v-if="po.status === 'dispatched'"
+                      type="button" 
+                      class="btn-mini success"
+                      style="padding:0.4rem 0.75rem;"
+                      @click="receivePurchaseOrder(po.id)"
+                    >
+                      Mark Received
+                    </button>
+                    <span v-else style="color:var(--text-muted); font-size:0.8rem; font-weight:600;">Inventory Updated</span>
                   </td>
                 </tr>
               </tbody>
@@ -1320,6 +1388,79 @@
           <div style="font-size:10px;font-weight:bold;margin-top:2px;">LKR @{{ barcodeModalProduct.price.toFixed(2) }}</div>
         </div>
       </template>
+    </div>
+
+    <!-- Purchase Order Template Modal Overlay -->
+    <div class="modal-overlay" v-if="showPOModal && activePOProduct">
+      <div class="receipt-modal" style="max-width: 600px; padding: 2.25rem; text-align: left;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+          <h2 style="font-family:'Outfit';font-weight:700;font-size:1.4rem;margin:0;color:var(--text-primary);display:inline-flex;align-items:center;gap:0.5rem">
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            Review Restock Purchase Order
+          </h2>
+          <button type="button" @click="showPOModal = false" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;">
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);padding:1.25rem;border-radius:8px;margin-bottom:1.25rem;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:0.75rem;">
+            <div>
+              <span style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.25rem;">Supplier</span>
+              <strong style="color:var(--text-primary);">@{{ activePOProduct.supplier }}</strong>
+            </div>
+            <div>
+              <span style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.25rem;">Preferred Alert Channel</span>
+              <span class="badge warning" v-if="activePOProduct.alertChannel === 'WhatsApp'">WhatsApp API Cloud</span>
+              <span class="badge" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3)" v-else>Email (SMTP Log)</span>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+            <div>
+              <span style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.25rem;">Product Unit Price</span>
+              <strong>LKR @{{ activePOProduct.price.toFixed(2) }}</strong>
+            </div>
+            <div>
+              <span style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.25rem;">Estimated Total Value</span>
+              <strong style="color:var(--accent-emerald);">LKR @{{ (activePOProduct.price * poQuantity).toFixed(2) }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <form @submit.prevent="dispatchPurchaseOrder">
+          <div style="margin-bottom:1.25rem;">
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Reorder Order Quantity (Units)</label>
+            <input 
+              type="number" 
+              class="admin-input" 
+              style="width: 100%; box-sizing: border-box; font-size: 1rem; font-weight: 700;" 
+              v-model.number="poQuantity" 
+              min="1" 
+              required
+            >
+          </div>
+
+          <div style="margin-bottom:1.5rem;">
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Purchase Order Message Body</label>
+            <textarea 
+              class="admin-input" 
+              style="width: 100%; box-sizing: border-box; height: 160px; font-family: monospace; font-size: 0.8rem; resize: none; line-height: 1.4;" 
+              v-model="poMessageBody" 
+              required
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem; font-size: 1rem; background: var(--gradient-purple)">
+            Confirm & Dispatch Purchase Order
+          </button>
+        </form>
+      </div>
     </div>
 
     <!-- Shift Gate Overlay -->

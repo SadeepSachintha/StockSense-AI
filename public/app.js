@@ -408,6 +408,7 @@ window.vm = createApp({
             reorderQty: parseInt(p.reorder_qty),
             leadTime: parseInt(p.lead_time_days),
             supplier: p.supplier.name,
+            supplierId: p.supplier_id,
             supplierContact: p.supplier.email,
             alertChannel: p.supplier.alert_channel,
             restockStatus: parseInt(p.current_stock) <= parseInt(p.safety_stock) ? 'Low Stock' : 'Normal',
@@ -1769,6 +1770,128 @@ window.vm = createApp({
       }
     };
 
+    const purchaseOrders = ref([]);
+    const showPOModal = ref(false);
+    const activePOProduct = ref(null);
+    const poQuantity = ref(0);
+    const poMessageBody = ref('');
+
+    const fetchPurchaseOrders = async () => {
+      try {
+        const res = await fetch(`/api/purchase-orders?tenant_id=${activeTenantId.value}`, {
+          headers: {
+            'X-Tenant-ID': activeTenantId.value
+          }
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          purchaseOrders.value = data.data;
+        }
+      } catch (err) {
+        console.error("Error fetching POs:", err);
+      }
+    };
+
+    const openPOModal = (product) => {
+      activePOProduct.value = product;
+      poQuantity.value = product.reorderQty || 50;
+      
+      poMessageBody.value = `Subject: Urgent Restock Order - StockSense Store
+
+Dear Supplier Partners,
+
+This is an automated purchase order request from StockSense Store (Tenant ID: ${activeTenantId.value.toUpperCase()}).
+Our stock levels for the following item have dropped below safety thresholds:
+
+Item: ${product.name}
+SKU: ${product.sku}
+Recommended Reorder Qty: ${poQuantity.value} units
+
+Please verify availability and dispatch with estimated lead time.
+
+Regards,
+Inventory Management Team`;
+
+      showPOModal.value = true;
+    };
+
+    watch(poQuantity, (newVal) => {
+      if (activePOProduct.value) {
+        poMessageBody.value = poMessageBody.value.replace(/Recommended Reorder Qty: \d+ units/, `Recommended Reorder Qty: ${newVal} units`);
+      }
+    });
+
+    const dispatchPurchaseOrder = async () => {
+      if (!activePOProduct.value) return;
+      try {
+        const res = await fetch(`/api/purchase-orders?tenant_id=${activeTenantId.value}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Tenant-ID': activeTenantId.value
+          },
+          body: JSON.stringify({
+            product_id: activePOProduct.value.id,
+            supplier_id: activePOProduct.value.supplierId || 1,
+            quantity: poQuantity.value,
+            message_body: poMessageBody.value
+          })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          playPOSSound('success');
+          showPOModal.value = false;
+          
+          toastAlert.value = {
+            show: true,
+            title: "PO Dispatched Successfully",
+            msg: data.message,
+            channel: activePOProduct.value.alertChannel || "Email"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 6000);
+          
+          await fetchPurchaseOrders();
+          await fetchLiveProducts();
+        } else {
+          alert("Error dispatching PO: " + data.message);
+        }
+      } catch (err) {
+        console.error("Error dispatching purchase order:", err);
+      }
+    };
+
+    const receivePurchaseOrder = async (poId) => {
+      try {
+        const res = await fetch(`/api/purchase-orders/${poId}/receive?tenant_id=${activeTenantId.value}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Tenant-ID': activeTenantId.value
+          }
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          playPOSSound('success');
+          toastAlert.value = {
+            show: true,
+            title: "Stock Replenished",
+            msg: data.message,
+            channel: "System Inventory Engine"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 5000);
+          
+          await fetchPurchaseOrders();
+          await fetchLiveProducts();
+        } else {
+          alert("Error receiving PO: " + data.message);
+        }
+      } catch (err) {
+        console.error("Error receiving stock:", err);
+      }
+    };
+
     const voidTransaction = async (receiptId) => {
       if (!confirm(`Are you sure you want to void transaction ${receiptId}? This will delete the sale records and refund all items back into store inventory.`)) {
         return;
@@ -1867,6 +1990,7 @@ window.vm = createApp({
       await fetchLiveProducts();
       await fetchTransactionHistory();
       await fetchActiveShift();
+      await fetchPurchaseOrders();
 
       // Listen to storage sync events across open tabs/panels
       window.addEventListener('storage', async (event) => {
@@ -1883,6 +2007,7 @@ window.vm = createApp({
           await fetchLiveProducts();
           await fetchTransactionHistory();
           await fetchActiveShift();
+          await fetchPurchaseOrders();
         }
       });
 
@@ -2067,7 +2192,15 @@ window.vm = createApp({
       slowMovingItems,
       skuSales,
       analyticsKPIs,
-      applyMarkdown
+      applyMarkdown,
+      purchaseOrders,
+      showPOModal,
+      activePOProduct,
+      poQuantity,
+      poMessageBody,
+      openPOModal,
+      dispatchPurchaseOrder,
+      receivePurchaseOrder
     };
   }
 }).mount('#app');
