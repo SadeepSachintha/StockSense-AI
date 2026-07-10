@@ -198,9 +198,11 @@ StockSense AI is built around modern software engineering, data, and ML engineer
 Recently, StockSense AI underwent six core enterprise production upgrades:
 
 ### A. POS Offline Resiliency, Discounts & Print Receipts
-- **Cart-Level Discount Engine:** Supports applying order discounts as either a percentage (`%`) or a fixed monetary value (`$`). Net subtotal deductions dynamically adjust the sales tax calculation and grand totals in real-time.
+- **Cart-Level Discount Engine:** Supports applying order discounts as either a percentage (`%`) or a fixed monetary value (`LKR`). Net subtotal deductions dynamically adjust the sales tax calculation and grand totals in real-time.
+- **POS Terminal Clear Cart Option:** Added a **Clear Cart** button next to the itemized count inside the checkout card header. Cashiers can empty all items in the active cart with a single click after confirming the operation, accompanied by custom trash wave audio feedback.
 - **Client-Side Storage Caching:** Integrated connection monitoring (`navigator.onLine`). If network connectivity drops, POS checkouts are cached in `localStorage` and automatically synchronized to the cloud on recovery.
-- **Synthesized Audio Engine:** Built a Web Audio API sound generator playing high-fidelity cashier beeps for successful scans and buzzer alerts for offline/connection errors.
+- **Synthesized Audio Engine:** Built a Web Audio API sound generator playing high-fidelity cashier beeps for successful scans, buzzer alerts for offline/connection errors, and low-frequency triangle wave sweeps for clearing checkout lists.
+- **Sri Lankan Rupee (LKR) Currency Localization:** Replaced all USD ($) currency formats with Sri Lankan Rupees (LKR) throughout the application, including working capital stats, price simulations, invoices, and printable receipts.
 - **Printer-Friendly Receipts (`@media print`):** Flat CSS page resets block height constraints to render clean thermal cash receipts in print preview.
 
 ### B. Smart SKU Suggestions & Autocomplete
