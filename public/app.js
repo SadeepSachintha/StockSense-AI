@@ -705,6 +705,14 @@ window.vm = createApp({
       }
     };
 
+    const clearCart = () => {
+      if (confirm("Are you sure you want to clear all items in your cart?")) {
+        cart.value = [];
+        discountValue.value = 0;
+        playPOSSound('trash');
+      }
+    };
+
     const playPOSSound = (type) => {
       try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -728,6 +736,14 @@ window.vm = createApp({
           gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.25);
           osc.start(ctx.currentTime);
           osc.stop(ctx.currentTime + 0.25);
+        } else if (type === 'trash') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(250, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.3);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.3);
         }
       } catch (err) {
         console.warn("Audio feedback block:", err);
@@ -1619,6 +1635,7 @@ window.vm = createApp({
       addToCart,
       removeFromCart,
       deleteFromCart,
+      clearCart,
       cartSubtotal,
       cartTax,
       cartTotal,

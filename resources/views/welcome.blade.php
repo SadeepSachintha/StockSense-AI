@@ -637,9 +637,23 @@
         <!-- Right Pane: Checkout Cart -->
         <div class="card pos-cart-panel">
           <div>
-            <h3 class="dashboard-card-title">
-              <span>Checkout Cart</span>
-              <span class="badge purple" style="font-size:0.75rem;">@{{ cart.length }} items</span>
+            <h3 class="dashboard-card-title" style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="display:inline-flex;align-items:center;gap:0.5rem">
+                <span>Checkout Cart</span>
+                <span class="badge purple" style="font-size:0.75rem;">@{{ cart.length }} items</span>
+              </span>
+              <button 
+                v-if="cart.length > 0" 
+                class="btn-mini danger" 
+                style="padding:0.35rem 0.65rem;border-radius:4px;font-size:0.7rem;gap:0.25rem;display:flex;align-items:center;background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.2);color:var(--accent-rose)" 
+                @click="clearCart"
+              >
+                <svg style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+                Clear Cart
+              </button>
             </h3>
 
             <div v-if="cart.length === 0" style="text-align:center;padding:3rem 0;color:var(--text-muted);">
