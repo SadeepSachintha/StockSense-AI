@@ -630,7 +630,20 @@
               </div>
               
               <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;">
-                <div class="pos-product-price">LKR @{{ product.price.toFixed(2) }}</div>
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <div class="pos-product-price">LKR @{{ product.price.toFixed(2) }}</div>
+                  <button 
+                    type="button" 
+                    class="btn-mini" 
+                    style="padding:0.25rem 0.4rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:var(--text-secondary);cursor:pointer;border-radius:4px;" 
+                    title="Generate Barcode Sticker"
+                    @click.stop="openBarcodeModal(product)"
+                  >
+                    <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                      <path d="M3 5v14M6 5v14M10 5v14M14 5v14M17 5v14M21 5v14"/>
+                    </svg>
+                  </button>
+                </div>
                 <div>
                   <span v-if="product.currentStock <= 0" class="badge danger">Out of Stock</span>
                   <span v-else-if="product.currentStock <= product.safetyStock" class="badge warning">Low Stock (@{{ product.currentStock }})</span>
@@ -1043,6 +1056,97 @@
       <div style="text-align:center;margin-top:20px;font-size:10px;">
         THANK YOU FOR YOUR BUSINESS!
       </div>
+    </div>
+
+    <!-- Barcode Sticker Modal Overlay -->
+    <div class="modal-overlay" v-if="showBarcodeModal && barcodeModalProduct">
+      <div class="receipt-modal" style="max-width: 500px; padding: 2.25rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+          <h2 style="font-family:'Outfit';font-weight:700;font-size:1.4rem;margin:0;color:var(--text-primary);display:inline-flex;align-items:center;gap:0.5rem">
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <path d="M3 5v14M6 5v14M10 5v14M14 5v14M17 5v14M21 5v14"/>
+            </svg>
+            Print SKU Barcodes
+          </h2>
+          <button type="button" @click="showBarcodeModal = false" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;">
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:1rem;border-radius:8px;margin-bottom:1.5rem;text-align:left;">
+          <div style="font-size:0.75rem;color:var(--text-muted);">PRODUCT NAME</div>
+          <strong style="font-size:1.1rem;color:var(--text-primary);display:block;margin-bottom:0.75rem;">@{{ barcodeModalProduct.name }}</strong>
+          <div style="display:flex;justify-content:space-between;">
+            <div>
+              <div style="font-size:0.75rem;color:var(--text-muted);">SKU CODE</div>
+              <strong style="color:var(--text-secondary);">@{{ barcodeModalProduct.sku }}</strong>
+            </div>
+            <div>
+              <div style="font-size:0.75rem;color:var(--text-muted);">PRICE</div>
+              <strong style="color:var(--accent-emerald);">LKR @{{ barcodeModalProduct.price.toFixed(2) }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview Sticker -->
+        <div style="background:#ffffff;padding:1.5rem;border-radius:8px;margin-bottom:1.5rem;display:flex;flex-direction:column;align-items:center;border:1px solid rgba(255,255,255,0.05);">
+          <div style="color:#000000;font-family:monospace;font-size:10px;font-weight:bold;margin-bottom:0.25rem;text-transform:uppercase;letter-spacing:0.05em;">* @{{ activeTenantId.toUpperCase() }} *</div>
+          <div style="color:#000000;font-family:'Outfit';font-weight:700;font-size:12px;margin-bottom:0.5rem;text-align:center;">@{{ barcodeModalProduct.name }}</div>
+          <div style="width:100%;max-width:280px;background:#ffffff;" v-html="getBarcodeSVG(barcodeModalProduct.sku)"></div>
+          <div style="color:#000000;font-family:'Outfit';font-weight:800;font-size:13px;margin-top:0.4rem;">LKR @{{ barcodeModalProduct.price.toFixed(2) }}</div>
+        </div>
+
+        <!-- Layout configuration selector -->
+        <div style="margin-bottom:1.5rem;text-align:left;">
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">Sticker Printing Layout</label>
+          <div style="display:flex;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:0.25rem;">
+            <button 
+              type="button" 
+              style="flex:1;padding:0.5rem;border-radius:6px;font-size:0.8rem;font-weight:600;border:none;cursor:pointer;transition:all 0.2s;"
+              :style="barcodePrintQty === 'single' ? 'background:var(--accent-purple);color:#fff;' : 'background:transparent;color:var(--text-secondary);'"
+              @click="barcodePrintQty = 'single'"
+            >
+              Single Label
+            </button>
+            <button 
+              type="button" 
+              style="flex:1;padding:0.5rem;border-radius:6px;font-size:0.8rem;font-weight:600;border:none;cursor:pointer;transition:all 0.2s;"
+              :style="barcodePrintQty === 'sheet' ? 'background:var(--accent-purple);color:#fff;' : 'background:transparent;color:var(--text-secondary);'"
+              @click="barcodePrintQty = 'sheet'"
+            >
+              Full Sheet (30 labels)
+            </button>
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary" style="width:100%;justify-content:center;padding:0.75rem;font-size:1rem;background:var(--gradient-purple);" @click="window.print()">
+          Print Labels
+        </button>
+      </div>
+    </div>
+
+    <!-- Printable Barcode Sheet (Hidden on screen, prints under media query) -->
+    <div v-if="barcodeModalProduct" :class="barcodePrintQty === 'sheet' ? 'print-barcode-sheet-layout' : 'print-barcode-single-layout'">
+      <!-- Single Sticker Print Layout -->
+      <div v-if="barcodePrintQty === 'single'" class="barcode-sticker-print-cell">
+        <div style="font-size:9px;font-weight:bold;font-family:monospace;text-transform:uppercase;">STOCKSENSE STORE</div>
+        <div style="font-size:11px;font-weight:bold;margin:2px 0;">@{{ barcodeModalProduct.name }}</div>
+        <div style="width:100%;background:#ffffff;margin:2px 0;" v-html="getBarcodeSVG(barcodeModalProduct.sku)"></div>
+        <div style="font-size:11px;font-weight:bold;margin-top:2px;">LKR @{{ barcodeModalProduct.price.toFixed(2) }}</div>
+      </div>
+
+      <!-- Sheet Sticker Print Layout (30 Labels) -->
+      <template v-else>
+        <div v-for="n in 30" :key="n" class="barcode-sticker-print-cell">
+          <div style="font-size:9px;font-weight:bold;font-family:monospace;text-transform:uppercase;">STOCKSENSE STORE</div>
+          <div style="font-size:10px;font-weight:bold;margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@{{ barcodeModalProduct.name }}</div>
+          <div style="width:100%;background:#ffffff;margin:2px 0;" v-html="getBarcodeSVG(barcodeModalProduct.sku)"></div>
+          <div style="font-size:10px;font-weight:bold;margin-top:2px;">LKR @{{ barcodeModalProduct.price.toFixed(2) }}</div>
+        </div>
+      </template>
     </div>
 
     <!-- Shift Gate Overlay -->

@@ -1537,4 +1537,61 @@ body {
   body.modal-open {
     visibility: hidden;
   }
+
+  /* Barcode Sheet Print Media Overrides */
+  .print-barcode-single-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 60mm !important;
+    height: 40mm !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 2mm !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+  }
+
+  .print-barcode-single-layout * {
+    color: #000000 !important;
+    background: transparent !important;
+  }
+
+  .print-barcode-sheet-layout {
+    display: grid !important;
+    grid-template-columns: repeat(3, 66mm) !important;
+    grid-auto-rows: 28mm !important;
+    gap: 3mm !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 5mm !important;
+    box-sizing: border-box !important;
+    page-break-after: always !important;
+  }
+
+  .barcode-sticker-print-cell {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px dashed #dddddd !important;
+    padding: 2mm !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .print-barcode-sheet-layout * {
+    color: #000000 !important;
+    background: transparent !important;
+  }
+}
+
+.print-barcode-sheet-layout,
+.print-barcode-single-layout {
+  display: none;
 }

@@ -1,5 +1,49 @@
 const { createApp, ref, computed, onMounted, watch } = Vue;
 
+const getCode39SVG = (value) => {
+  const code39Map = {
+    '0': '000110100', '1': '100100001', '2': '001100001', '3': '101100000',
+    '4': '000110001', '5': '100110000', '6': '001110000', '7': '000100101',
+    '8': '100100100', '9': '001100100', 'A': '100001001', 'B': '001001001',
+    'C': '101001000', 'D': '000011001', 'E': '100011000', 'F': '001011000',
+    'G': '000001101', 'H': '100001100', 'I': '001001100', 'J': '000011100',
+    'K': '100000011', 'L': '001000011', 'M': '101000010', 'N': '000010011',
+    'O': '100010010', 'P': '001010010', 'Q': '000000111', 'R': '100000110',
+    'S': '001000110', 'T': '000010110', 'U': '110000001', 'V': '011000001',
+    'W': '111000000', 'X': '010010001', 'Y': '110010000', 'Z': '011010000',
+    '-': '010000101', '.': '110000010', ' ': '011000010', '*': '010010100',
+    '$': '010101000', '/': '010100010', '+': '010001010', '%': '000101010'
+  };
+  
+  if (!value) return '';
+  const text = '*' + value.toUpperCase() + '*';
+  let svgPaths = '';
+  let x = 10;
+  const height = 45;
+  
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const pattern = code39Map[char] || code39Map[' '];
+    
+    for (let j = 0; j < 9; j++) {
+      const isBar = (j % 2 === 0);
+      const isWide = (pattern[j] === '1');
+      const width = isWide ? 3 : 1;
+      
+      if (isBar) {
+        svgPaths += `<rect x="${x}" y="5" width="${width}" height="${height}" fill="black" />`;
+      }
+      x += width;
+    }
+    x += 1;
+  }
+  
+  return `<svg width="100%" height="75" viewBox="0 0 ${x + 10} 75" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;">
+    ${svgPaths}
+    <text x="${(x + 20) / 2}" y="65" font-family="monospace" font-size="11" text-anchor="middle" fill="black" font-weight="bold">${value.toUpperCase()}</text>
+  </svg>`;
+};
+
 window.vm = createApp({
   setup() {
     // Nav & System status
@@ -1564,6 +1608,20 @@ window.vm = createApp({
       showPaymentModal.value = true;
     };
 
+    const showBarcodeModal = ref(false);
+    const barcodeModalProduct = ref(null);
+    const barcodePrintQty = ref('single');
+
+    const openBarcodeModal = (product) => {
+      barcodeModalProduct.value = product;
+      barcodePrintQty.value = 'single';
+      showBarcodeModal.value = true;
+    };
+
+    const getBarcodeSVG = (sku) => {
+      return getCode39SVG(sku);
+    };
+
     const transactionHistory = ref([]);
     const showHistoryPanel = ref(false);
 
@@ -1867,7 +1925,12 @@ window.vm = createApp({
       cashTendered,
       openShift,
       closeShift,
-      startCheckoutFlow
+      startCheckoutFlow,
+      showBarcodeModal,
+      barcodeModalProduct,
+      barcodePrintQty,
+      openBarcodeModal,
+      getBarcodeSVG
     };
   }
 }).mount('#app');
