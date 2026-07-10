@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\PosTransaction;
+use App\Models\RegisterShift;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
@@ -43,6 +44,8 @@ class POSIngestController extends Controller
                 'discount' => $discount,
                 'tax' => $tax,
                 'total' => (float)max(0, $subtotal - $discount + $tax),
+                'payment_method' => $first ? $first->payment_method : 'cash',
+                'shift_id' => $first ? $first->shift_id : null,
             ];
         })->values();
 
@@ -62,6 +65,8 @@ class POSIngestController extends Controller
             'receipt_id' => 'nullable|string',
             'discount_amount' => 'nullable|numeric|min:0',
             'tax_amount' => 'nullable|numeric|min:0',
+            'shift_id' => 'nullable|string',
+            'payment_method' => 'nullable|string',
             'transactions' => 'required|array',
             'transactions.*.sku' => 'required|string',
             'transactions.*.quantity' => 'required|integer|min:1',
@@ -72,6 +77,13 @@ class POSIngestController extends Controller
         $receiptId = $request->input('receipt_id') ?? ('TX-' . rand(100000, 999999));
         $discountAmount = $request->input('discount_amount') ?? 0.00;
         $taxAmount = $request->input('tax_amount') ?? 0.00;
+        $paymentMethod = $request->input('payment_method') ?? 'cash';
+        
+        $shiftId = $request->input('shift_id');
+        if (!$shiftId) {
+            $activeShift = RegisterShift::where('status', 'open')->first();
+            $shiftId = $activeShift ? $activeShift->id : null;
+        }
 
         $ingestedCount = 0;
         $warnings = [];
@@ -94,6 +106,8 @@ class POSIngestController extends Controller
                 'receipt_id' => $receiptId,
                 'discount_amount' => $discountAmount,
                 'tax_amount' => $taxAmount,
+                'shift_id' => $shiftId,
+                'payment_method' => $paymentMethod,
             ]);
 
             // Deduct current stock

@@ -15,6 +15,11 @@ Route::post('/products/ingest', [POSIngestController::class, 'ingest']);
 Route::get('/transactions', [POSIngestController::class, 'index']);
 Route::delete('/transactions/{receipt_id}', [POSIngestController::class, 'destroy']);
 
+// Register Shift Routes
+Route::get('/shifts/active', [\App\Http\Controllers\POSShiftController::class, 'active']);
+Route::post('/shifts/open', [\App\Http\Controllers\POSShiftController::class, 'open']);
+Route::post('/shifts/close', [\App\Http\Controllers\POSShiftController::class, 'close']);
+
 // Supplier Management Routes
 Route::get('/suppliers', [\App\Http\Controllers\SupplierController::class, 'index']);
 Route::post('/suppliers', [\App\Http\Controllers\SupplierController::class, 'store']);

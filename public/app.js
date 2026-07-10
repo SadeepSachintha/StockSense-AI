@@ -858,7 +858,7 @@ window.vm = createApp({
       return net + cartTax.value;
     });
 
-    const submitCheckout = async () => {
+    const submitCheckout = async (paymentMethod = 'cash') => {
       if (cart.value.length === 0) return;
 
       const subtotalVal = cartSubtotal.value;
@@ -882,13 +882,17 @@ window.vm = createApp({
         discount: discountAmount.value,
         tax: taxVal,
         total: totalVal,
-        isOffline: !isOnline.value
+        isOffline: !isOnline.value,
+        payment_method: paymentMethod,
+        cash_tendered: paymentMethod === 'cash' ? parseFloat(cashTendered.value || 0) : totalVal,
+        change_due: paymentMethod === 'cash' ? Math.max(0, parseFloat(cashTendered.value || 0) - totalVal) : 0
       };
 
       const payload = {
         receipt_id: receipt.id,
         discount_amount: receipt.discount,
         tax_amount: receipt.tax,
+        payment_method: paymentMethod,
         transactions: cart.value.map(item => ({
           sku: item.product.sku,
           quantity: item.quantity,
@@ -948,6 +952,7 @@ window.vm = createApp({
           // Clear cart & reset discount
           cart.value = [];
           discountValue.value = 0;
+          showPaymentModal.value = false;
           
           // Populate receipt & show modal
           receiptData.value = receipt;
@@ -1463,6 +1468,100 @@ window.vm = createApp({
       await fetchSuppliers();
       await fetchLiveProducts();
       await fetchTransactionHistory();
+      await fetchActiveShift();
+    };
+
+    const activeShift = ref(null);
+    const showShiftGate = ref(false);
+    const openingFloat = ref(0);
+
+    const showCloseShiftModal = ref(false);
+    const actualCashCounted = ref(0);
+    const closeShiftReport = ref(null);
+
+    const showPaymentModal = ref(false);
+    const checkoutPaymentMethod = ref('cash');
+    const cashTendered = ref(0);
+
+    const fetchActiveShift = async () => {
+      try {
+        const res = await fetch(`/api/shifts/active?tenant_id=${activeTenantId.value}`);
+        const data = await res.json();
+        if (data.status === 'success') {
+          activeShift.value = data.data;
+          showShiftGate.value = false;
+        } else {
+          activeShift.value = null;
+          showShiftGate.value = true;
+        }
+      } catch (err) {
+        console.error("Error fetching active shift:", err);
+      }
+    };
+
+    const openShift = async () => {
+      if (parseFloat(openingFloat.value || 0) < 0) {
+        alert("Please enter a valid float amount.");
+        return;
+      }
+      try {
+        const res = await fetch(`/api/shifts/open?tenant_id=${activeTenantId.value}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Tenant-ID': activeTenantId.value
+          },
+          body: JSON.stringify({ opening_float: parseFloat(openingFloat.value || 0) })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          playPOSSound('success');
+          showShiftGate.value = false;
+          await fetchActiveShift();
+        } else {
+          alert("Error opening shift: " + data.message);
+        }
+      } catch (err) {
+        console.error("Error opening shift:", err);
+      }
+    };
+
+    const closeShift = async () => {
+      if (parseFloat(actualCashCounted.value || 0) < 0) {
+        alert("Please enter a valid counted cash amount.");
+        return;
+      }
+      try {
+        const res = await fetch(`/api/shifts/close?tenant_id=${activeTenantId.value}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Tenant-ID': activeTenantId.value
+          },
+          body: JSON.stringify({ actual_cash: parseFloat(actualCashCounted.value || 0) })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          playPOSSound('success');
+          closeShiftReport.value = data.data;
+          showCloseShiftModal.value = false;
+          activeShift.value = null;
+          showShiftGate.value = true;
+        } else {
+          alert("Error closing shift: " + data.message);
+        }
+      } catch (err) {
+        console.error("Error closing shift:", err);
+      }
+    };
+
+    const startCheckoutFlow = () => {
+      if (cart.value.length === 0) return;
+      cashTendered.value = cartTotal.value;
+      checkoutPaymentMethod.value = 'cash';
+      showPaymentModal.value = true;
     };
 
     const transactionHistory = ref([]);
@@ -1577,6 +1676,7 @@ window.vm = createApp({
       await fetchSuppliers();
       await fetchLiveProducts();
       await fetchTransactionHistory();
+      await fetchActiveShift();
 
       // Listen to storage sync events across open tabs/panels
       window.addEventListener('storage', async (event) => {
@@ -1592,6 +1692,7 @@ window.vm = createApp({
           await fetchSuppliers();
           await fetchLiveProducts();
           await fetchTransactionHistory();
+          await fetchActiveShift();
         }
       });
 
@@ -1754,7 +1855,19 @@ window.vm = createApp({
       showHistoryPanel,
       fetchTransactionHistory,
       voidTransaction,
-      reprintReceipt
+      reprintReceipt,
+      activeShift,
+      showShiftGate,
+      openingFloat,
+      showCloseShiftModal,
+      actualCashCounted,
+      closeShiftReport,
+      showPaymentModal,
+      checkoutPaymentMethod,
+      cashTendered,
+      openShift,
+      closeShift,
+      startCheckoutFlow
     };
   }
 }).mount('#app');

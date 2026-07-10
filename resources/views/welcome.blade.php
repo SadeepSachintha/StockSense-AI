@@ -605,6 +605,13 @@
                 </svg>
                 Sales History
               </button>
+              <button type="button" class="btn-secondary" style="padding:0.35rem 0.75rem;font-size:0.75rem;display:inline-flex;align-items:center;gap:0.35rem;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:var(--text-secondary)" @click="showCloseShiftModal = true">
+                <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <line x1="9" y1="3" x2="9" y2="21"/>
+                </svg>
+                Register Shift
+              </button>
               <button class="btn-primary" style="padding:0.35rem 0.75rem;font-size:0.75rem;gap:0.35rem;background:var(--gradient-purple)" @click="showAddProductModal = true">
                 <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
                   <line x1="12" y1="5" x2="12" y2="19"/>
@@ -773,7 +780,7 @@
               class="btn-primary" 
               style="width:100%;margin-top:1.25rem;justify-content:center;font-size:0.95rem;padding:0.75rem;"
               :disabled="cart.length === 0"
-              @click="submitCheckout"
+              @click="startCheckoutFlow"
             >
               Complete Sale (Checkout)
             </button>
@@ -1035,6 +1042,281 @@
       
       <div style="text-align:center;margin-top:20px;font-size:10px;">
         THANK YOU FOR YOUR BUSINESS!
+      </div>
+    </div>
+
+    <!-- Shift Gate Overlay -->
+    <div class="modal-overlay" v-if="showShiftGate && activeTab === 'pos'">
+      <div class="receipt-modal" style="max-width: 450px; padding: 2.5rem; text-align: center; border: 1px solid rgba(168,85,247,0.3); background: radial-gradient(circle at top right, rgba(168,85,247,0.1), transparent 60%), #12131a;">
+        <div style="background: rgba(168,85,247,0.15); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+          <svg style="width: 32px; height: 32px; stroke: var(--accent-purple); fill: none; stroke-width: 2" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <h2 style="font-family:'Outfit'; font-weight: 800; font-size: 1.6rem; color: var(--text-primary); margin-bottom: 0.5rem;">Register Drawer Locked</h2>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem;">Please open a new register shift by inputting the starting cash float in the drawer.</p>
+        
+        <form @submit.prevent="openShift" style="text-align: left;">
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">Starting Cash Float (LKR)</label>
+          <input 
+            type="number" 
+            class="admin-input" 
+            style="width: 100%; font-size: 1.1rem; padding: 0.75rem; box-sizing: border-box; text-align: center; font-weight: 700; color: var(--accent-emerald); margin-bottom: 1.5rem;" 
+            placeholder="0.00" 
+            min="0" 
+            v-model.number="openingFloat" 
+            required
+          >
+          <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem; font-size: 1rem; background: var(--gradient-purple)">
+            Open Register Shift
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Close Shift Modal Overlay -->
+    <div class="modal-overlay" v-if="showCloseShiftModal">
+      <div class="receipt-modal" style="max-width: 550px; padding: 2.25rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+          <h2 style="font-family:'Outfit';font-weight:700;font-size:1.4rem;margin:0;color:var(--text-primary);display:inline-flex;align-items:center;gap:0.5rem">
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+            </svg>
+            Active Register Shift Report
+          </h2>
+          <button type="button" @click="showCloseShiftModal = false" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;">
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <div v-if="activeShift" style="color:var(--text-secondary);font-size:0.9rem;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;background:rgba(255,255,255,0.02);padding:1rem;border-radius:8px;border:1px solid rgba(255,255,255,0.04);">
+            <div>
+              <span style="font-size:0.75rem;color:var(--text-muted);display:block;">Shift Started</span>
+              <strong>@{{ new Date(activeShift.opened_at).toLocaleString() }}</strong>
+            </div>
+            <div>
+              <span style="font-size:0.75rem;color:var(--text-muted);display:block;">Starting Float</span>
+              <strong>LKR @{{ activeShift.opening_float.toFixed(2) }}</strong>
+            </div>
+          </div>
+
+          <h3 style="font-size:0.8rem;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.75rem;font-weight:700;">Sales Breakdown</h3>
+          <div style="background:rgba(0,0,0,0.15);padding:1rem;border-radius:8px;margin-bottom:1.5rem;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
+              <span>Cash Sales:</span>
+              <strong>LKR @{{ activeShift.cash_sales.toFixed(2) }}</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
+              <span>Credit Card Sales:</span>
+              <strong>LKR @{{ activeShift.card_sales.toFixed(2) }}</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
+              <span>QR Mobile Sales:</span>
+              <strong>LKR @{{ activeShift.qr_sales.toFixed(2) }}</strong>
+            </div>
+            <div style="border-top:1px solid rgba(255,255,255,0.06);margin-top:0.5rem;padding-top:0.5rem;display:flex;justify-content:space-between;font-weight:700;color:var(--text-primary);">
+              <span>Total Shift Sales:</span>
+              <strong style="color:var(--accent-emerald);">LKR @{{ activeShift.total_sales.toFixed(2) }}</strong>
+            </div>
+          </div>
+
+          <div style="background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);padding:1rem;border-radius:8px;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <span style="font-size:0.75rem;color:var(--text-muted);display:block;">Expected Drawer Cash</span>
+              <span style="font-size:0.75rem;color:var(--text-muted);">(Starting Float + Cash Sales)</span>
+            </div>
+            <strong style="font-size:1.25rem;color:var(--accent-emerald);">LKR @{{ activeShift.expected_cash.toFixed(2) }}</strong>
+          </div>
+
+          <form @submit.prevent="closeShift">
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">Actual Drawer Cash Counted (LKR)</label>
+            <input 
+              type="number" 
+              class="admin-input" 
+              style="width:100%;font-size:1.15rem;padding:0.75rem;text-align:center;box-sizing:border-box;font-weight:700;color:var(--text-primary);margin-bottom:1.5rem;" 
+              placeholder="0.00" 
+              min="0" 
+              v-model.number="actualCashCounted" 
+              required
+            >
+            <button type="submit" class="btn-primary danger" style="width:100%;justify-content:center;padding:0.75rem;font-size:1rem;">
+              Close Shift & Lock Register
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Closed Shift Summary Report Overlay (Printable Report) -->
+    <div class="modal-overlay" v-if="closeShiftReport">
+      <div class="receipt-modal" style="max-width: 450px; padding: 2.25rem; text-align: center;">
+        <div style="background: rgba(34,197,94,0.15); width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+          <svg style="width: 28px; height: 28px; stroke: var(--accent-emerald); fill: none; stroke-width: 2" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h2 style="font-family:'Outfit'; font-weight: 800; font-size: 1.4rem; color: var(--text-primary); margin-bottom: 1.5rem;">Shift Summary Report</h2>
+
+        <!-- Printable Report Layout -->
+        <div id="print-shift-report" style="text-align: left; font-family: monospace; font-size: 0.8rem; background: #000; padding: 1.25rem; border-radius: 6px; color: #fff; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.05); line-height: 1.4;">
+          <div style="text-align: center; font-weight: bold; font-size: 0.95rem; margin-bottom: 0.5rem;">STOCKSENSE REGISTER REPORT</div>
+          <div style="text-align: center; margin-bottom: 1rem;">--------------------------------</div>
+          <div>SHIFT ID: @{{ closeShiftReport.id }}</div>
+          <div>OPENED: @{{ new Date(closeShiftReport.opened_at).toLocaleString() }}</div>
+          <div>CLOSED: @{{ new Date(closeShiftReport.closed_at).toLocaleString() }}</div>
+          <div>--------------------------------</div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>STARTING FLOAT</span>
+            <span>LKR @{{ closeShiftReport.opening_float.toFixed(2) }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>CASH SALES</span>
+            <span>LKR @{{ closeShiftReport.cash_sales.toFixed(2) }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>CARD SALES</span>
+            <span>LKR @{{ closeShiftReport.card_sales.toFixed(2) }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>QR SALES</span>
+            <span>LKR @{{ closeShiftReport.qr_sales.toFixed(2) }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-weight:bold;margin:0.25rem 0;">
+            <span>TOTAL SHIFT SALES</span>
+            <span>LKR @{{ closeShiftReport.total_sales.toFixed(2) }}</span>
+          </div>
+          <div>--------------------------------</div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>EXPECTED DRAWER CASH</span>
+            <span>LKR @{{ closeShiftReport.expected_cash.toFixed(2) }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>ACTUAL DRAWER CASH</span>
+            <span>LKR @{{ closeShiftReport.actual_cash.toFixed(2) }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-weight:bold;color: @{{ closeShiftReport.discrepancy < 0 ? '#f43f5e' : (closeShiftReport.discrepancy > 0 ? '#34d399' : '#fff') }};">
+            <span>DISCREPANCY (SHORT/OVER)</span>
+            <span>LKR @{{ closeShiftReport.discrepancy.toFixed(2) }}</span>
+          </div>
+          <div style="text-align: center; margin-top: 1rem;">--------------------------------</div>
+          <div style="text-align: center; font-size: 0.7rem; color: #a1a1aa;">AUDIT LOG GENERATED SUCCESSFULLY</div>
+        </div>
+
+        <div style="display:flex;gap:0.75rem;">
+          <button type="button" class="btn-secondary" style="flex:1;justify-content:center;padding:0.6rem;font-size:0.85rem;" @click="window.print()">
+            Print Report
+          </button>
+          <button type="button" class="btn-primary" style="flex:1;justify-content:center;padding:0.6rem;font-size:0.85rem;background:var(--gradient-purple);" @click="closeShiftReport = null">
+            Done (Acknowledge)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multi-Payment Checkout Modal Overlay -->
+    <div class="modal-overlay" v-if="showPaymentModal">
+      <div class="receipt-modal" style="max-width: 500px; padding: 2.25rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+          <h2 style="font-family:'Outfit';font-weight:700;font-size:1.4rem;margin:0;color:var(--text-primary);display:inline-flex;align-items:center;gap:0.5rem">
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <rect x="2" y="5" width="20" height="14" rx="2" ry="2"/>
+              <line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+            Select Payment Method
+          </h2>
+          <button type="button" @click="showPaymentModal = false" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;">
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <div style="margin-bottom:1.5rem;text-align:center;background:rgba(255,255,255,0.02);padding:1rem;border-radius:8px;border:1px solid rgba(255,255,255,0.04);">
+          <span style="font-size:0.8rem;color:var(--text-secondary);display:block;margin-bottom:0.25rem;">Total Amount Due</span>
+          <strong style="font-size:1.8rem;color:var(--accent-emerald);">LKR @{{ cartTotal.toFixed(2) }}</strong>
+        </div>
+
+        <!-- Payment Method Options Grid -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:1.5rem;">
+          <button 
+            type="button"
+            style="padding:1rem 0.5rem;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0.5rem;transition:all 0.2s;"
+            :style="checkoutPaymentMethod === 'cash' ? 'background:rgba(168,85,247,0.15);border:2px solid var(--accent-purple);color:#fff;' : 'background:rgba(255,255,255,0.02);border:2px solid rgba(255,255,255,0.05);color:var(--text-secondary);'"
+            @click="checkoutPaymentMethod = 'cash'; cashTendered = cartTotal;"
+          >
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <rect x="2" y="6" width="20" height="12" rx="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <path d="M6 12h.01M18 12h.01"/>
+            </svg>
+            <span style="font-size:0.8rem;font-weight:700;">Cash</span>
+          </button>
+
+          <button 
+            type="button"
+            style="padding:1rem 0.5rem;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0.5rem;transition:all 0.2s;"
+            :style="checkoutPaymentMethod === 'card' ? 'background:rgba(168,85,247,0.15);border:2px solid var(--accent-purple);color:#fff;' : 'background:rgba(255,255,255,0.02);border:2px solid rgba(255,255,255,0.05);color:var(--text-secondary);'"
+            @click="checkoutPaymentMethod = 'card'; cashTendered = cartTotal;"
+          >
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+            <span style="font-size:0.8rem;font-weight:700;">Credit Card</span>
+          </button>
+
+          <button 
+            type="button"
+            style="padding:1rem 0.5rem;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0.5rem;transition:all 0.2s;"
+            :style="checkoutPaymentMethod === 'qr' ? 'background:rgba(168,85,247,0.15);border:2px solid var(--accent-purple);color:#fff;' : 'background:rgba(255,255,255,0.02);border:2px solid rgba(255,255,255,0.05);color:var(--text-secondary);'"
+            @click="checkoutPaymentMethod = 'qr'; cashTendered = cartTotal;"
+          >
+            <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            <span style="font-size:0.8rem;font-weight:700;">QR Mobile</span>
+          </button>
+        </div>
+
+        <!-- Cash Details Calculator Panel -->
+        <div v-if="checkoutPaymentMethod === 'cash'" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:1.25rem;border-radius:8px;margin-bottom:1.5rem;">
+          <div style="margin-bottom:1rem;">
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">Cash Tendered (LKR)</label>
+            <input 
+              type="number" 
+              class="admin-input" 
+              style="width:100%;font-size:1.25rem;padding:0.6rem;text-align:center;box-sizing:border-box;font-weight:700;color:var(--text-primary);" 
+              placeholder="0.00" 
+              min="0" 
+              v-model.number="cashTendered" 
+              required
+            >
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.85rem;color:var(--text-secondary);">Change Due:</span>
+            <strong style="font-size:1.35rem;color:var(--accent-rose);">LKR @{{ Math.max(0, cashTendered - cartTotal).toFixed(2) }}</strong>
+          </div>
+        </div>
+
+        <button 
+          type="button" 
+          class="btn-primary" 
+          style="width:100%;justify-content:center;padding:0.75rem;font-size:1rem;background:var(--gradient-purple);"
+          :disabled="checkoutPaymentMethod === 'cash' && cashTendered < cartTotal"
+          @click="submitCheckout(checkoutPaymentMethod)"
+        >
+          Confirm Payment & Print Receipt
+        </button>
       </div>
     </div>
 

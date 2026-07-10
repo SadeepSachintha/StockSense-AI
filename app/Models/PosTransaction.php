@@ -27,6 +27,8 @@ class PosTransaction extends Model
         'receipt_id',
         'discount_amount',
         'tax_amount',
+        'shift_id',
+        'payment_method',
     ];
 
     protected $casts = [
@@ -52,5 +54,13 @@ class PosTransaction extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Get the shift associated with this transaction.
+     */
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(RegisterShift::class, 'shift_id', 'id');
     }
 }
