@@ -12,6 +12,7 @@ Route::post('/products', [ProductForecastController::class, 'store']);
 Route::get('/products/{id}/forecast', [ProductForecastController::class, 'showForecast']);
 Route::put('/products/{id}/replenish', [ProductForecastController::class, 'replenish']);
 Route::put('/products/{id}/price', [ProductForecastController::class, 'updatePrice']);
+Route::put('/products/{id}/safety-stock', [ProductForecastController::class, 'updateSafetyStock']);
 Route::post('/products/ingest', [POSIngestController::class, 'ingest']);
 Route::get('/transactions', [POSIngestController::class, 'index']);
 Route::delete('/transactions/{receipt_id}', [POSIngestController::class, 'destroy']);

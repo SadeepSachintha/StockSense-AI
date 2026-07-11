@@ -228,4 +228,44 @@ class ForecastIntegrationTest extends TestCase
         $product->refresh();
         $this->assertEquals(85.00, (float)$product->price);
     }
+
+    /**
+     * Test updating product safety stock threshold.
+     *
+     * @test
+     */
+    public function it_can_update_safety_stock_threshold()
+    {
+        $tenant = Tenant::create([
+            'id' => 'tenant_123',
+            'name' => 'Test Tenant Retailers',
+            'subscription_tier' => 'basic',
+            'status' => 'active'
+        ]);
+
+        $product = Product::create([
+            'tenant_id' => 'tenant_123',
+            'sku' => 'SKU-SAFETY-TEST',
+            'name' => 'Safety Stock Item',
+            'category' => 'Agri',
+            'price' => 100.00,
+            'current_stock' => 50,
+            'safety_stock' => 10,
+            'max_stock' => 100,
+            'reorder_qty' => 20,
+            'lead_time_days' => 3
+        ]);
+
+        $response = $this->withHeaders([
+            'X-Tenant-ID' => 'tenant_123'
+        ])->putJson("/api/products/{$product->id}/safety-stock", [
+            'safety_stock' => 25
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['status' => 'success']);
+
+        $product->refresh();
+        $this->assertEquals(25, $product->safety_stock);
+    }
 }

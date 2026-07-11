@@ -1892,6 +1892,85 @@ Inventory Management Team`;
       }
     };
 
+    const calculatorServiceLevel = ref('95');
+    const calculatorLeadTime = ref(3);
+    const calculatorOverrideStdDev = ref(null);
+
+    watch(selectedSku, (newSku) => {
+      if (newSku) {
+        calculatorLeadTime.value = newSku.leadTime || 3;
+        calculatorOverrideStdDev.value = null;
+      }
+    }, { immediate: true });
+
+    const getZScore = (level) => {
+      const maps = { '90': 1.28, '95': 1.65, '98': 2.05, '99': 2.33 };
+      return maps[level] || 1.65;
+    };
+
+    const calculatedStdDev = computed(() => {
+      if (!selectedSku.value) return 0;
+      
+      const skuTxs = flatTransactions.value.filter(tx => tx.sku === selectedSku.value.sku);
+      if (skuTxs.length === 0) return 3.5;
+      
+      const dailySales = {};
+      skuTxs.forEach(tx => {
+        const dateStr = new Date(tx.time).toDateString();
+        dailySales[dateStr] = (dailySales[dateStr] || 0) + tx.quantity;
+      });
+      
+      const vols = Object.values(dailySales);
+      if (vols.length === 0) return 3.5;
+      
+      const n = vols.length;
+      const mean = vols.reduce((a, b) => a + b, 0) / n;
+      const variance = vols.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / n;
+      return parseFloat(Math.max(0.5, Math.sqrt(variance)).toFixed(2));
+    });
+
+    const finalSafetyStock = computed(() => {
+      if (!selectedSku.value) return 0;
+      const z = getZScore(calculatorServiceLevel.value);
+      const stdDev = calculatorOverrideStdDev.value !== null ? parseFloat(calculatorOverrideStdDev.value) : calculatedStdDev.value;
+      const lt = calculatorLeadTime.value || selectedSku.value.leadTime || 3;
+      
+      return Math.round(z * stdDev * Math.sqrt(lt));
+    });
+
+    const applySafetyStock = async () => {
+      if (!selectedSku.value) return;
+      try {
+        const res = await fetch(`/api/products/${selectedSku.value.id}/safety-stock?tenant_id=${activeTenantId.value}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Tenant-ID': activeTenantId.value
+          },
+          body: JSON.stringify({ safety_stock: finalSafetyStock.value })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          playPOSSound('success');
+          
+          toastAlert.value = {
+            show: true,
+            title: "Safety Stock Updated",
+            msg: `Safety stock threshold for ${selectedSku.value.name} updated to ${finalSafetyStock.value} units in database.`,
+            channel: "Inventory Engine"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 6000);
+          
+          await fetchLiveProducts();
+        } else {
+          alert("Error updating safety stock: " + data.message);
+        }
+      } catch (err) {
+        console.error("Error updating safety stock:", err);
+      }
+    };
+
     const voidTransaction = async (receiptId) => {
       if (!confirm(`Are you sure you want to void transaction ${receiptId}? This will delete the sale records and refund all items back into store inventory.`)) {
         return;
@@ -2200,7 +2279,13 @@ Inventory Management Team`;
       poMessageBody,
       openPOModal,
       dispatchPurchaseOrder,
-      receivePurchaseOrder
+      receivePurchaseOrder,
+      calculatorServiceLevel,
+      calculatorLeadTime,
+      calculatorOverrideStdDev,
+      calculatedStdDev,
+      finalSafetyStock,
+      applySafetyStock
     };
   }
 }).mount('#app');

@@ -259,4 +259,26 @@ class ProductForecastController extends Controller
             'data' => $product
         ]);
     }
+
+    /**
+     * Update product safety stock threshold.
+     */
+    public function updateSafetyStock(Request $request, string $id): JsonResponse
+    {
+        $product = Product::findOrFail($id);
+
+        $validated = $request->validate([
+            'safety_stock' => 'required|integer|min:0',
+        ]);
+
+        $product->update([
+            'safety_stock' => $validated['safety_stock']
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Product safety stock threshold updated successfully.',
+            'data' => $product
+        ]);
+    }
 }

@@ -319,62 +319,143 @@
 
       <!-- Panel 2: Demand Forecast deep analytics -->
       <div v-else-if="activeTab === 'forecast'" class="dashboard-grid-1x2">
-        <!-- Control board / elastic price simulation -->
-        <div class="card" style="display:flex;flex-direction:column;justify-content:space-between">
-          <div>
-            <h3 class="dashboard-card-title">SKU Analytics Selector</h3>
-            <div style="margin-bottom:1.5rem">
-              <label style="font-size:0.8rem;color:var(--text-muted);display:block;margin-bottom:0.5rem">Select Item</label>
-              <select v-model="selectedSkuId" class="select-input" style="width:100%">
-                <option v-for="item in skus" :key="item.id" :value="item.id">@{{ item.name }}</option>
-              </select>
+        <!-- Left Column Wrapper -->
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+          <!-- Control board / elastic price simulation -->
+          <div class="card" style="display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <h3 class="dashboard-card-title">SKU Analytics Selector</h3>
+              <div style="margin-bottom:1.5rem">
+                <label style="font-size:0.8rem;color:var(--text-muted);display:block;margin-bottom:0.5rem">Select Item</label>
+                <select v-model="selectedSkuId" class="select-input" style="width:100%">
+                  <option v-for="item in skus" :key="item.id" :value="item.id">@{{ item.name }}</option>
+                </select>
+              </div>
+              
+              <div v-if="selectedSku" class="elasticity-accent-card" style="margin-bottom:1.5rem">
+                <div style="font-size:0.75rem;text-transform:uppercase;color:var(--text-muted);font-weight:600">Model Stats</div>
+                <div style="display:flex;justify-content:space-between;margin-top:0.4rem">
+                  <span style="font-size:0.85rem">LGBM SKU Error (WMAPE):</span>
+                  <strong style="color:var(--accent-purple)">@{{ selectedSku.wmape }}%</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:0.4rem">
+                  <span style="font-size:0.85rem">Price Elasticity Beta:</span>
+                  <strong style="color:var(--accent-blue)">@{{ selectedSku.elasticity }}</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:0.4rem">
+                  <span style="font-size:0.85rem">Base Retail Price:</span>
+                  <strong>LKR @{{ selectedSku.price.toFixed(2) }}</strong>
+                </div>
+              </div>
             </div>
-            
-            <div v-if="selectedSku" class="elasticity-accent-card" style="margin-bottom:1.5rem">
-              <div style="font-size:0.75rem;text-transform:uppercase;color:var(--text-muted);font-weight:600">Model Stats</div>
-              <div style="display:flex;justify-content:space-between;margin-top:0.4rem">
-                <span style="font-size:0.85rem">LGBM SKU Error (WMAPE):</span>
-                <strong style="color:var(--accent-purple)">@{{ selectedSku.wmape }}%</strong>
+
+            <!-- Price Elasticity Interactive Simulator -->
+            <div class="simulator-panel">
+              <div class="simulator-header">
+                <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                <span>Price Elasticity Simulator</span>
               </div>
-              <div style="display:flex;justify-content:space-between;margin-top:0.4rem">
-                <span style="font-size:0.85rem">Price Elasticity Beta:</span>
-                <strong style="color:var(--accent-blue)">@{{ selectedSku.elasticity }}</strong>
+              <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:1.25rem">
+                Adjust price dynamically to preview how sales volumes shift based on client-trained model elasticity logs.
+              </p>
+
+              <div class="slider-container">
+                <label>Price Shift</label>
+                <input type="range" min="-20" max="20" step="1" v-model.number="priceAdjustment" class="range-slider">
+                <span class="slider-val">@{{ priceAdjustment > 0 ? '+' : '' }}@{{ priceAdjustment }}%</span>
               </div>
-              <div style="display:flex;justify-content:space-between;margin-top:0.4rem">
-                <span style="font-size:0.85rem">Base Retail Price:</span>
-                <strong>LKR @{{ selectedSku.price.toFixed(2) }}</strong>
+
+              <div class="elasticity-result">
+                <span>Adjusted SKU Price:</span>
+                <strong style="color:var(--text-primary)">LKR @{{ simulatedPrice }}</strong>
+              </div>
+              
+              <div class="elasticity-result" style="border:none;margin-top:0.25rem">
+                <span>Expected Sales Shift:</span>
+                <span class="highlight" :class="{ negative: demandShiftPercent < 0 }">
+                  @{{ demandShiftPercent > 0 ? '+' : '' }}@{{ demandShiftPercent }}%
+                </span>
               </div>
             </div>
           </div>
 
-          <!-- Price Elasticity Interactive Simulator -->
-          <div class="simulator-panel">
-            <div class="simulator-header">
-              <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
-                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-              </svg>
-              <span>Price Elasticity Simulator</span>
-            </div>
-            <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:1.25rem">
-              Adjust price dynamically to preview how sales volumes shift based on client-trained model elasticity logs.
+          <!-- Card 2: Safety Stock Dynamic Calculator -->
+          <div class="card" v-if="selectedSku" style="margin-top:0;">
+            <h3 class="dashboard-card-title" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <span>Safety Stock Calculator</span>
+              <span class="badge success" style="font-size:0.65rem;">Statistical</span>
+            </h3>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:1.25rem;">
+              Computes buffer stock using the standard formula: <code style="color:var(--accent-purple)">Z * std_dev * &radic;L</code>.
             </p>
 
-            <div class="slider-container">
-              <label>Price Shift</label>
-              <input type="range" min="-20" max="20" step="1" v-model.number="priceAdjustment" class="range-slider">
-              <span class="slider-val">@{{ priceAdjustment > 0 ? '+' : '' }}@{{ priceAdjustment }}%</span>
-            </div>
+            <div style="display:flex; flex-direction:column; gap:1rem;">
+              <!-- Service Level -->
+              <div>
+                <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:0.35rem; font-weight:600;">Target Service Level (Safety Factor Z)</label>
+                <select v-model="calculatorServiceLevel" class="select-input" style="width:100%">
+                  <option value="90">90% (Z = 1.28 - Low protection)</option>
+                  <option value="95">95% (Z = 1.65 - Balanced safety)</option>
+                  <option value="98">98% (Z = 2.05 - High protection)</option>
+                  <option value="99">99% (Z = 2.33 - Critical defense)</option>
+                </select>
+              </div>
 
-            <div class="elasticity-result">
-              <span>Adjusted SKU Price:</span>
-              <strong style="color:var(--text-primary)">LKR @{{ simulatedPrice }}</strong>
-            </div>
-            
-            <div class="elasticity-result" style="border:none;margin-top:0.25rem">
-              <span>Expected Sales Shift:</span>
-              <span class="highlight" :class="{ negative: demandShiftPercent < 0 }">
-                @{{ demandShiftPercent > 0 ? '+' : '' }}@{{ demandShiftPercent }}%
-              </span>
+              <!-- Supplier Lead Time -->
+              <div>
+                <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:0.35rem; font-weight:600;">Supplier Lead Time (Days)</label>
+                <input type="number" class="admin-input" style="width:100%; box-sizing:border-box;" v-model.number="calculatorLeadTime" min="1">
+              </div>
+
+              <!-- Daily Demand Std Dev -->
+              <div>
+                <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:0.35rem; font-weight:600; display:flex; justify-content:space-between;">
+                  <span>Demand Standard Deviation (Daily Sales)</span>
+                  <span style="font-family:monospace; color:var(--text-muted)">Auto: @{{ calculatedStdDev }}</span>
+                </label>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <input 
+                    type="range" 
+                    min="0.5" 
+                    max="15" 
+                    step="0.1" 
+                    :value="calculatorOverrideStdDev !== null ? calculatorOverrideStdDev : calculatedStdDev"
+                    @input="calculatorOverrideStdDev = parseFloat($event.target.value)"
+                    style="flex:1"
+                  >
+                  <span style="font-family:monospace; font-size:0.85rem; width:45px; text-align:right;">
+                    @{{ calculatorOverrideStdDev !== null ? calculatorOverrideStdDev.toFixed(1) : calculatedStdDev.toFixed(1) }}
+                  </span>
+                  <button 
+                    v-if="calculatorOverrideStdDev !== null" 
+                    type="button" 
+                    class="btn-mini" 
+                    style="padding:0.25rem 0.5rem; background:rgba(255,255,255,0.05); color:var(--text-muted);"
+                    @click="calculatorOverrideStdDev = null"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Live Calculation Result -->
+              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding:1rem; border-radius:6px; display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+                <div>
+                  <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; letter-spacing:0.05em;">Calculated Safety Stock</span>
+                  <strong style="font-size:1.4rem; color:var(--accent-rose); font-family:'Outfit'; font-weight:800;">@{{ finalSafetyStock }} units</strong>
+                </div>
+                <button 
+                  type="button" 
+                  class="btn-primary" 
+                  style="padding:0.5rem 1rem; font-size:0.8rem;"
+                  @click="applySafetyStock"
+                >
+                  Apply Threshold
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
