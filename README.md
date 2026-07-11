@@ -255,3 +255,10 @@ Recently, StockSense AI underwent six core enterprise production upgrades:
 - **Simulated Communication Logs:** Automatically writes PO logs and dispatches orders via simulated channels, outputting transaction summaries directly inside Laravel log targets.
 - **Purchase Orders Audit Trail:** Integrates an interactive PO grid tracking outgoing orders, pending states, and timestamps.
 - **Incremental Warehouse Receipts:** Cashiers/managers can check-in pending supplier deliveries with a single click. Marking a PO as "Stock Received" automatically increments product inventory counts in the database and updates catalog values in real-time.
+
+### K. Interactive Safety Stock Statistical Calculator
+- **Standard Buffer Formula:** Implemented dynamic calculations based on standard operations theory: `Z * std_dev * sqrt(lead_time_days)`.
+- **Target Service Levels:** Supports selecting target fulfillment rates (90% service level Z=1.28 up to 99% critical defense Z=2.33).
+- **Auto-Calculated Demand Volatility:** Evaluates daily sales transactions over the past 30 days to compute standard deviation automatically.
+- **Supply Chain Volatility Simulator:** Exposes a manual slider override to simulate standard deviation variations, with a quick reset.
+- **Database Writeback Integration:** A single click writes the calculated safety stock threshold back to the database in real-time, immediately updating restocking dashboard metrics.
