@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(\App\Http\Middleware\ResolveTenantContext::class);
+        $middleware->alias([
+            'tier' => \App\Http\Middleware\VerifySubscriptionTier::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

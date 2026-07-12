@@ -23,7 +23,7 @@ class SupplierManagementTest extends TestCase
             'id' => 'tenant_test_1',
             'name' => 'Store 1',
             'company_name' => 'Store 1 LLC',
-            'subscription_tier' => 'free',
+            'subscription_tier' => 'basic',
             'status' => 'active'
         ]);
 

@@ -12,6 +12,7 @@
     window.userRole = "{{ session('user_role', 'owner') }}";
     window.userName = "{{ session('user_name', 'System Operator') }}";
     window.tenantName = "{{ session('tenant_id') && \Schema::hasTable('tenants') ? (\App\Models\Tenant::find(session('tenant_id'))?->name ?? 'Global Goods Retailers') : 'Global Goods Retailers' }}";
+    window.subscriptionTier = "{{ session('tenant_id') && \Schema::hasTable('tenants') ? (\App\Models\Tenant::find(session('tenant_id'))?->subscription_tier ?? 'premium') : 'premium' }}";
     window.tenantId = "{{ session('tenant_id', 'tenant_001') }}";
   </script>
 </head>
@@ -43,7 +44,7 @@
               Overview
             </button>
           </li>
-          <li v-if="userRole === 'owner'" class="nav-item" :class="{ active: activeTab === 'forecast' }">
+          <li v-if="userRole === 'owner' && subscriptionTier === 'premium'" class="nav-item" :class="{ active: activeTab === 'forecast' }">
             <button @click="activeTab = 'forecast'">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3 3v18h18" stroke-linecap="round" stroke-linejoin="round"/>
@@ -52,7 +53,7 @@
               Demand Forecast
             </button>
           </li>
-          <li v-if="userRole === 'owner'" class="nav-item" :class="{ active: activeTab === 'restock' }">
+          <li v-if="userRole === 'owner' && (subscriptionTier === 'basic' || subscriptionTier === 'premium')" class="nav-item" :class="{ active: activeTab === 'restock' }">
             <button @click="activeTab = 'restock'">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L2 7l10 5 10-5-10-5z" stroke-linecap="round" stroke-linejoin="round"/>
@@ -71,7 +72,7 @@
               POS Terminal
             </button>
           </li>
-          <li v-if="userRole === 'owner'" class="nav-item" :class="{ active: activeTab === 'mlops' }">
+          <li v-if="userRole === 'owner' && subscriptionTier === 'premium'" class="nav-item" :class="{ active: activeTab === 'mlops' }">
             <button @click="activeTab = 'mlops'">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke-linecap="round" stroke-linejoin="round"/>
@@ -79,7 +80,7 @@
               MLOps Health
             </button>
           </li>
-          <li v-if="userRole === 'owner'" class="nav-item" :class="{ active: activeTab === 'analytics' }">
+          <li v-if="userRole === 'owner' && (subscriptionTier === 'basic' || subscriptionTier === 'premium')" class="nav-item" :class="{ active: activeTab === 'analytics' }">
             <button @click="activeTab = 'analytics'; fetchTransactionHistory();">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:currentColor;fill:none;stroke-width:2">
                 <line x1="18" y1="20" x2="18" y2="10" stroke-linecap="round" stroke-linejoin="round"/>

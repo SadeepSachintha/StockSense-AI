@@ -50,6 +50,7 @@ window.vm = createApp({
     const userRole = ref(window.userRole || 'owner');
     const userName = ref(window.userName || 'System Operator');
     const tenantName = ref(window.tenantName || 'Global Goods Retailers');
+    const subscriptionTier = ref(window.subscriptionTier || 'premium');
 
     // Nav & System status
     const initialTab = window.location.pathname.includes('/saas-admin') 
@@ -2156,7 +2157,34 @@ Inventory Management Team`;
       await fetchLiveProducts();
     };
 
+    watch(activeTab, (newTab) => {
+      if (userRole.value === 'cashier' && newTab !== 'pos') {
+        activeTab.value = 'pos';
+      } else if (userRole.value === 'owner') {
+        if (subscriptionTier.value === 'free' && !['overview', 'pos'].includes(newTab)) {
+          activeTab.value = 'overview';
+        } else if (subscriptionTier.value === 'basic' && ['forecast', 'mlops'].includes(newTab)) {
+          activeTab.value = 'overview';
+        }
+      }
+    });
+
     onMounted(async () => {
+      // Gating validations on load
+      if (userRole.value === 'cashier') {
+        activeTab.value = 'pos';
+      } else if (userRole.value === 'owner') {
+        if (subscriptionTier.value === 'free') {
+          if (!['overview', 'pos'].includes(activeTab.value)) {
+            activeTab.value = 'overview';
+          }
+        } else if (subscriptionTier.value === 'basic') {
+          if (['forecast', 'mlops'].includes(activeTab.value)) {
+            activeTab.value = 'overview';
+          }
+        }
+      }
+
       await fetchActiveTenantSettings();
       await fetchSuppliers();
       await fetchLiveProducts();
@@ -2387,7 +2415,8 @@ Inventory Management Team`;
       newTenantUser,
       fetchTenantUsers,
       createTenantUser,
-      deleteTenantUser
+      deleteTenantUser,
+      subscriptionTier
     };
   }
 }).mount('#app');

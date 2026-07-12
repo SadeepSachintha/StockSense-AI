@@ -20,7 +20,7 @@ class ForecastIntegrationTest extends TestCase
         $tenant = Tenant::create([
             'id' => 'tenant_123',
             'name' => 'Test Tenant Retailers',
-            'subscription_tier' => 'basic',
+            'subscription_tier' => 'premium',
             'status' => 'active'
         ]);
 
@@ -78,7 +78,7 @@ class ForecastIntegrationTest extends TestCase
         $tenant = Tenant::create([
             'id' => 'tenant_123',
             'name' => 'Test Tenant Retailers',
-            'subscription_tier' => 'basic',
+            'subscription_tier' => 'premium',
             'status' => 'active'
         ]);
 
@@ -134,7 +134,7 @@ class ForecastIntegrationTest extends TestCase
         $tenant = Tenant::create([
             'id' => 'tenant_123',
             'name' => 'Test Tenant Retailers',
-            'subscription_tier' => 'basic',
+            'subscription_tier' => 'premium',
             'status' => 'active'
         ]);
 
@@ -239,7 +239,7 @@ class ForecastIntegrationTest extends TestCase
         $tenant = Tenant::create([
             'id' => 'tenant_123',
             'name' => 'Test Tenant Retailers',
-            'subscription_tier' => 'basic',
+            'subscription_tier' => 'premium',
             'status' => 'active'
         ]);
 
