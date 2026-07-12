@@ -49,28 +49,28 @@ class DatabaseSeeder extends Seeder
                 'username' => 'owner',
                 'password' => $password,
                 'role' => 'owner',
-                'name' => 'Sadeep (Owner)',
+                'name' => 'Sadeep',
             ],
             [
                 'tenant_id' => 'tenant_001',
                 'username' => 'cashier',
                 'password' => $password,
                 'role' => 'cashier',
-                'name' => 'Janith (Cashier)',
+                'name' => 'Janith',
             ],
             [
                 'tenant_id' => 'tenant_002',
                 'username' => 'owner',
                 'password' => $password,
                 'role' => 'owner',
-                'name' => 'Maneesha (Owner)',
+                'name' => 'Maneesha',
             ],
             [
                 'tenant_id' => 'tenant_002',
                 'username' => 'cashier',
                 'password' => $password,
                 'role' => 'cashier',
-                'name' => 'Kavindi (Cashier)',
+                'name' => 'Kavindi',
             ]
         ];
 
