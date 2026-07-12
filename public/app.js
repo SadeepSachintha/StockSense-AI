@@ -49,6 +49,9 @@ window.vm = createApp({
     // Operator Role & Session Details
     const userRole = ref(window.userRole || 'owner');
     const userName = ref(window.userName || 'System Operator');
+    const cleanedUserName = computed(() => {
+      return userName.value.replace(/\s*\((owner|cashier)\)/i, '');
+    });
     const tenantName = ref(window.tenantName || 'Global Goods Retailers');
     const subscriptionTier = ref(window.subscriptionTier || 'premium');
 
@@ -2409,6 +2412,7 @@ Inventory Management Team`;
       applySafetyStock,
       userRole,
       userName,
+      cleanedUserName,
       tenantName,
       selectedProvisionTenantId,
       tenantUsersList,

@@ -101,7 +101,7 @@
           <div class="tenant-info">
             <div class="tenant-name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:110px;">@{{ tenantName }}</div>
             <div class="tenant-role" style="font-size:0.7rem; color:var(--text-muted);">
-              @{{ userName }} (@{{ userRole.toUpperCase() }})
+              @{{ cleanedUserName }} (@{{ userRole.toUpperCase() }})
             </div>
           </div>
         </div>
