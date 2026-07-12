@@ -412,7 +412,7 @@ window.vm = createApp({
             name: p.name,
             category: p.category,
             price: parseFloat(p.price),
-            costPrice: p.cost_price ? parseFloat(p.cost_price) : parseFloat(p.price) * 0.7,
+            costPrice: (p.cost_price && parseFloat(p.cost_price) > 0) ? parseFloat(p.cost_price) : parseFloat(p.price) * 0.7,
             elasticity: parseFloat(p.elasticity),
             currentStock: parseInt(p.current_stock),
             safetyStock: parseInt(p.safety_stock),
