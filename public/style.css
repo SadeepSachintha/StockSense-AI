@@ -1595,3 +1595,117 @@ body {
 .print-barcode-single-layout {
   display: none;
 }
+
+/* Premium POS REDESIGN Styles */
+.pos-product-card {
+  background: rgba(22, 30, 49, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.15);
+}
+.pos-product-card:hover {
+  transform: translateY(-4px);
+  background: rgba(22, 30, 49, 0.55);
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 10px 30px -5px rgba(139, 92, 246, 0.15), 0 8px 16px -6px rgba(0, 0, 0, 0.3);
+}
+.barcode-scanner-container {
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.barcode-scanner-container:focus-within {
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(139, 92, 246, 0.15);
+}
+.pos-cart-panel {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: var(--shadow-lg), inset 0 1px 1px rgba(255,255,255,0.02);
+}
+.qty-counter {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.qty-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.qty-btn:hover {
+  background: var(--accent-purple);
+  color: #ffffff;
+}
+.modal-overlay {
+  backdrop-filter: blur(15px) saturate(120%);
+  background: rgba(10, 15, 30, 0.7);
+  animation: fade-in 0.25s ease-out;
+}
+.receipt-modal {
+  background: linear-gradient(170deg, #101626 0%, #0b0e17 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 50px rgba(139, 92, 246, 0.12) !important;
+  backdrop-filter: blur(25px);
+}
+.stats-card-premium {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.04) 0%, rgba(59, 130, 246, 0.04) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.12);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.premium-input-calculator {
+  width: 100%;
+  font-family: 'Outfit', monospace;
+  font-size: 1.75rem;
+  padding: 0.85rem;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 10px;
+  color: var(--accent-emerald) !important;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+  transition: all 0.25s;
+}
+.premium-input-calculator:focus {
+  outline: none;
+  border-color: var(--accent-purple) !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 20px rgba(139, 92, 246, 0.3);
+}
+.premium-list-item-card {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  transition: all 0.2s;
+}
+.premium-list-item-card:hover {
+  background: rgba(255, 255, 255, 0.025);
+  border-color: rgba(255, 255, 255, 0.08);
+}

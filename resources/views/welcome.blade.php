@@ -774,7 +774,7 @@
                 </svg>
                 Register Shift
               </button>
-              <button class="btn-primary" style="padding:0.35rem 0.75rem;font-size:0.75rem;gap:0.35rem;background:var(--gradient-purple)" @click="showAddProductModal = true">
+              <button v-if="userRole === 'owner'" class="btn-primary" style="padding:0.35rem 0.75rem;font-size:0.75rem;gap:0.35rem;background:var(--gradient-purple)" @click="showAddProductModal = true">
                 <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
                   <line x1="12" y1="5" x2="12" y2="19"/>
                   <line x1="5" y1="12" x2="19" y2="12"/>
@@ -1595,57 +1595,56 @@
         </div>
 
         <div v-if="activeShift" style="color:var(--text-secondary);font-size:0.9rem;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;background:rgba(255,255,255,0.02);padding:1rem;border-radius:8px;border:1px solid rgba(255,255,255,0.04);">
+          <div class="stats-card-premium" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
             <div>
-              <span style="font-size:0.75rem;color:var(--text-muted);display:block;">Shift Started</span>
-              <strong>@{{ new Date(activeShift.opened_at).toLocaleString() }}</strong>
+              <span style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.25rem;">Shift Started</span>
+              <strong style="color:var(--text-primary);">@{{ new Date(activeShift.opened_at).toLocaleTimeString() }}</strong>
             </div>
             <div>
-              <span style="font-size:0.75rem;color:var(--text-muted);display:block;">Starting Float</span>
-              <strong>LKR @{{ activeShift.opening_float.toFixed(2) }}</strong>
+              <span style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.25rem;">Starting Float</span>
+              <strong style="color:var(--accent-purple);">LKR @{{ activeShift.opening_float.toFixed(2) }}</strong>
             </div>
           </div>
 
-          <h3 style="font-size:0.8rem;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.75rem;font-weight:700;">Sales Breakdown</h3>
-          <div style="background:rgba(0,0,0,0.15);padding:1rem;border-radius:8px;margin-bottom:1.5rem;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
-              <span>Cash Sales:</span>
-              <strong>LKR @{{ activeShift.cash_sales.toFixed(2) }}</strong>
+          <h3 style="font-size:0.8rem;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.75rem;font-weight:700;letter-spacing:0.05em;">Sales Breakdown</h3>
+          <div style="background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.04);padding:1rem;border-radius:10px;margin-bottom:1.5rem;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.6rem;">
+              <span style="color:var(--text-secondary);">Cash Sales:</span>
+              <strong style="color:var(--text-primary);">LKR @{{ activeShift.cash_sales.toFixed(2) }}</strong>
             </div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
-              <span>Credit Card Sales:</span>
-              <strong>LKR @{{ activeShift.card_sales.toFixed(2) }}</strong>
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.6rem;">
+              <span style="color:var(--text-secondary);">Credit Card Sales:</span>
+              <strong style="color:var(--text-primary);">LKR @{{ activeShift.card_sales.toFixed(2) }}</strong>
             </div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
-              <span>QR Mobile Sales:</span>
-              <strong>LKR @{{ activeShift.qr_sales.toFixed(2) }}</strong>
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.6rem;">
+              <span style="color:var(--text-secondary);">QR Mobile Sales:</span>
+              <strong style="color:var(--text-primary);">LKR @{{ activeShift.qr_sales.toFixed(2) }}</strong>
             </div>
-            <div style="border-top:1px solid rgba(255,255,255,0.06);margin-top:0.5rem;padding-top:0.5rem;display:flex;justify-content:space-between;font-weight:700;color:var(--text-primary);">
+            <div style="border-top:1px dashed rgba(255,255,255,0.08);margin-top:0.6rem;padding-top:0.6rem;display:flex;justify-content:space-between;font-weight:700;color:var(--text-primary);">
               <span>Total Shift Sales:</span>
-              <strong style="color:var(--accent-emerald);">LKR @{{ activeShift.total_sales.toFixed(2) }}</strong>
+              <strong style="color:var(--accent-purple);">LKR @{{ activeShift.total_sales.toFixed(2) }}</strong>
             </div>
           </div>
 
-          <div style="background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);padding:1rem;border-radius:8px;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;">
+          <div style="background:rgba(16,185,129,0.03);border:1px solid rgba(16,185,129,0.12);padding:1rem;border-radius:10px;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <span style="font-size:0.75rem;color:var(--text-muted);display:block;">Expected Drawer Cash</span>
-              <span style="font-size:0.75rem;color:var(--text-muted);">(Starting Float + Cash Sales)</span>
+              <span style="font-size:0.75rem;color:var(--text-muted);display:block;font-weight:600;">Expected Drawer Cash</span>
+              <span style="font-size:0.65rem;color:var(--text-muted);">(Starting Float + Cash Sales)</span>
             </div>
-            <strong style="font-size:1.25rem;color:var(--accent-emerald);">LKR @{{ activeShift.expected_cash.toFixed(2) }}</strong>
+            <strong style="font-size:1.35rem;color:var(--accent-emerald);">LKR @{{ activeShift.expected_cash.toFixed(2) }}</strong>
           </div>
 
           <form @submit.prevent="closeShift">
             <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">Actual Drawer Cash Counted (LKR)</label>
             <input 
               type="number" 
-              class="admin-input" 
-              style="width:100%;font-size:1.15rem;padding:0.75rem;text-align:center;box-sizing:border-box;font-weight:700;color:var(--text-primary);margin-bottom:1.5rem;" 
+              class="premium-input-calculator" 
               placeholder="0.00" 
               min="0" 
               v-model.number="actualCashCounted" 
               required
             >
-            <button type="submit" class="btn-primary danger" style="width:100%;justify-content:center;padding:0.75rem;font-size:1rem;">
+            <button type="submit" class="btn-primary danger" style="width:100%;justify-content:center;padding:0.85rem;font-size:1rem;font-weight:700;border-radius:10px;background:var(--gradient-rose);">
               Close Shift & Lock Register
             </button>
           </form>
@@ -1823,7 +1822,7 @@
     <!-- Transaction History Modal Overlay -->
     <div class="modal-overlay" v-if="showHistoryPanel">
       <div class="receipt-modal" style="max-width:800px;width:100%;padding:2.25rem;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem">
           <h2 style="font-family:'Outfit';font-weight:700;font-size:1.5rem;margin:0;color:var(--text-primary);display:inline-flex;align-items:center;gap:0.5rem">
             <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="10"/>
@@ -1831,7 +1830,7 @@
             </svg>
             Today's Transaction History
           </h2>
-          <button type="button" @click="showHistoryPanel = false" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;">
+          <button type="button" @click="showHistoryPanel = false" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;transition:color 0.15s;" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">
             <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
@@ -1850,30 +1849,30 @@
         </div>
 
         <div v-else style="max-height:480px;overflow-y:auto;padding-right:0.5rem">
-          <div v-for="receipt in transactionHistory" :key="receipt.id" class="card" style="background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:1rem;margin-bottom:1rem">
+          <div v-for="receipt in transactionHistory" :key="receipt.id" class="premium-list-item-card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;flex-wrap:wrap;gap:0.5rem">
               <div>
-                <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem">@{{ receipt.id }}</span>
+                <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem;font-family:monospace;letter-spacing:0.02em;">#@{{ receipt.id }}</span>
                 <span style="font-size:0.75rem;color:var(--text-muted);margin-left:0.5rem">@{{ new Date(receipt.time).toLocaleTimeString() }}</span>
               </div>
               <div style="display:flex;gap:0.4rem;align-items:center">
-                <strong style="color:var(--accent-emerald);font-size:1.05rem;margin-right:0.5rem">LKR @{{ receipt.total.toFixed(2) }}</strong>
-                <button type="button" class="btn-mini" style="padding:0.35rem 0.65rem;border-radius:4px;font-size:0.7rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:var(--text-secondary);cursor:pointer;" @click="reprintReceipt(receipt)">
+                <strong style="color:var(--accent-emerald);font-size:1.1rem;margin-right:0.5rem;font-family:'Outfit';">LKR @{{ receipt.total.toFixed(2) }}</strong>
+                <button type="button" class="btn-mini" style="padding:0.4rem 0.75rem;border-radius:6px;font-size:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);color:var(--text-secondary);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'" @click="reprintReceipt(receipt)">
                   Reprint
                 </button>
-                <button type="button" class="btn-mini danger" style="padding:0.35rem 0.65rem;border-radius:4px;font-size:0.7rem;cursor:pointer;" @click="voidTransaction(receipt.id)">
+                <button type="button" class="btn-mini danger" style="padding:0.4rem 0.75rem;border-radius:6px;font-size:0.7rem;cursor:pointer;background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.25);color:#fb7185;transition:all 0.15s;" onmouseover="this.style.background='var(--gradient-rose)';this.style.color='#fff';" onmouseout="this.style.background='rgba(244,63,94,0.1)';this.style.color='#fb7185';" @click="voidTransaction(receipt.id)">
                   Void
                 </button>
               </div>
             </div>
 
             <!-- Items list inside the history card -->
-            <div style="background:rgba(0,0,0,0.2);border-radius:6px;padding:0.5rem 0.75rem;font-size:0.8rem;color:var(--text-secondary)">
-              <div v-for="item in receipt.items" :key="item.sku" style="display:flex;justify-content:space-between;margin-bottom:0.25rem">
+            <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:0.75rem 1rem;font-size:0.8rem;color:var(--text-secondary);border:1px solid rgba(255,255,255,0.02)">
+              <div v-for="item in receipt.items" :key="item.sku" style="display:flex;justify-content:space-between;margin-bottom:0.35rem">
                 <span>@{{ item.name }} (x@{{ item.quantity }})</span>
-                <span>LKR @{{ item.subtotal.toFixed(2) }}</span>
+                <span style="font-weight:600;">LKR @{{ item.subtotal.toFixed(2) }}</span>
               </div>
-              <div style="border-top:1px dashed rgba(255,255,255,0.08);margin-top:0.4rem;padding-top:0.4rem;display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted)">
+              <div style="border-top:1px dashed rgba(255,255,255,0.08);margin-top:0.5rem;padding-top:0.5rem;display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted)">
                 <span>Subtotal: LKR @{{ receipt.subtotal.toFixed(2) }} | Discount: LKR @{{ receipt.discount.toFixed(2) }} | Tax: LKR @{{ receipt.tax.toFixed(2) }}</span>
               </div>
             </div>
