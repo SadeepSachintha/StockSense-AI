@@ -33,6 +33,7 @@
 
       <nav>
         <ul class="nav-menu">
+          <!-- OWNER TABS -->
           <li v-if="userRole === 'owner'" class="nav-item" :class="{ active: activeTab === 'overview' }">
             <button @click="activeTab = 'overview'">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -63,13 +64,14 @@
               Restock Center
             </button>
           </li>
-          <li class="nav-item" :class="{ active: activeTab === 'pos' }">
-            <button @click="activeTab = 'pos'">
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="3" width="18" height="18" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M7 8h10M7 12h10M7 16h4" stroke-linecap="round" stroke-linejoin="round"/>
+          <li v-if="userRole === 'owner' && (subscriptionTier === 'basic' || subscriptionTier === 'premium')" class="nav-item" :class="{ active: activeTab === 'analytics' }">
+            <button @click="activeTab = 'analytics'; fetchTransactionHistory();">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:currentColor;fill:none;stroke-width:2">
+                <line x1="18" y1="20" x2="18" y2="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="12" y1="20" x2="12" y2="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="6" y1="20" x2="6" y2="14" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              POS Terminal
+              Analytics
             </button>
           </li>
           <li v-if="userRole === 'owner' && subscriptionTier === 'premium'" class="nav-item" :class="{ active: activeTab === 'mlops' }">
@@ -80,14 +82,67 @@
               MLOps Health
             </button>
           </li>
-          <li v-if="userRole === 'owner' && (subscriptionTier === 'basic' || subscriptionTier === 'premium')" class="nav-item" :class="{ active: activeTab === 'analytics' }">
-            <button @click="activeTab = 'analytics'; fetchTransactionHistory();">
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:currentColor;fill:none;stroke-width:2">
-                <line x1="18" y1="20" x2="18" y2="10" stroke-linecap="round" stroke-linejoin="round"/>
-                <line x1="12" y1="20" x2="12" y2="4" stroke-linecap="round" stroke-linejoin="round"/>
-                <line x1="6" y1="20" x2="6" y2="14" stroke-linecap="round" stroke-linejoin="round"/>
+          <li v-if="userRole === 'owner'" class="nav-item" :class="{ active: activeTab === 'inventory' }">
+            <button @click="activeTab = 'inventory'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+                <line x1="6" y1="21" x2="18" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
               </svg>
-              Analytics
+              Inventory
+            </button>
+          </li>
+          <li v-if="userRole === 'owner'" class="nav-item" :class="{ active: activeTab === 'reports' }">
+            <button @click="activeTab = 'reports'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+              Reports
+            </button>
+          </li>
+
+          <!-- CASHIER TABS -->
+          <li v-if="userRole === 'cashier'" class="nav-item" :class="{ active: activeTab === 'pos' }">
+            <button @click="activeTab = 'pos'">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="3" width="18" height="18" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 8h10M7 12h10M7 16h4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              POS Checkout
+            </button>
+          </li>
+          <li v-if="userRole === 'cashier'" class="nav-item" :class="{ active: activeTab === 'inventory' }">
+            <button @click="activeTab = 'inventory'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+                <line x1="6" y1="21" x2="18" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+              Inventory
+            </button>
+          </li>
+          <li v-if="userRole === 'cashier'" class="nav-item" :class="{ active: activeTab === 'sales_history' }">
+            <button @click="activeTab = 'sales_history'; fetchTransactionHistory();">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Sales History
+            </button>
+          </li>
+          <li v-if="userRole === 'cashier'" class="nav-item" :class="{ active: activeTab === 'register_shift' }">
+            <button @click="activeTab = 'register_shift'; fetchActiveShift();">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="9" y1="3" x2="9" y2="21"/>
+              </svg>
+              Register Shift
             </button>
           </li>
         </ul>
@@ -131,12 +186,21 @@
           <h1 v-else-if="activeTab === 'pos'">POS Checkout Terminal</h1>
           <h1 v-else-if="activeTab === 'mlops'">MLOps Pipelines & Drift Observability</h1>
           <h1 v-else-if="activeTab === 'analytics'">Inventory Performance & Analytics</h1>
+          <h1 v-else-if="activeTab === 'inventory'">Inventory Catalog Management</h1>
+          <h1 v-else-if="activeTab === 'sales_history'">Today's Sales & Transactions</h1>
+          <h1 v-else-if="activeTab === 'register_shift'">Register Cash Drawer Shift</h1>
+          <h1 v-else-if="activeTab === 'reports'">Premium Analytics & Reports</h1>
+
           <p v-if="activeTab === 'overview'">Real-time telemetry, ingest status, and recent actions.</p>
           <p v-else-if="activeTab === 'forecast'">Optuna-tuned LightGBM forecasts with price elasticity simulator.</p>
           <p v-else-if="activeTab === 'restock'">Automated supplier notifications and safety stock tracking.</p>
           <p v-else-if="activeTab === 'pos'">Checkout client orders and sync inventory in real-time.</p>
           <p v-else-if="activeTab === 'mlops'">Apache Airflow retraining workflows, MLflow metrics, and drift scoring.</p>
           <p v-else-if="activeTab === 'analytics'">Dynamic metrics, turnover ratio, gross margins, and slow-moving promotion engine.</p>
+          <p v-else-if="activeTab === 'inventory'">Search products, check stock levels, print barcodes, and manage catalog items.</p>
+          <p v-else-if="activeTab === 'sales_history'">Review daily checkout history logs, reprint invoices, and void transactions.</p>
+          <p v-else-if="activeTab === 'register_shift'">Track cashier shifts, manage starting float, and reconcile daily register cash.</p>
+          <p v-else-if="activeTab === 'reports'">SaaS executive insights, inventory valuations, and financial summaries.</p>
         </div>
         
         <div class="header-actions">
@@ -753,145 +817,79 @@
           </div>
         </div>
 
-        <div class="pos-terminal-grid">
-        
-        <!-- Left Pane: Product Catalog -->
-        <div class="card">
-          <h3 class="dashboard-card-title" style="display:flex;justify-content:space-between;align-items:center;">
-            <span>Product Catalog</span>
-            <div style="display:flex;gap:0.5rem">
-              <button type="button" class="btn-secondary" style="padding:0.35rem 0.75rem;font-size:0.75rem;display:inline-flex;align-items:center;gap:0.35rem;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:var(--text-secondary)" @click="showHistoryPanel = true">
-                <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12 6 12 12 16 14"/>
-                </svg>
-                Sales History
-              </button>
-              <button type="button" class="btn-secondary" style="padding:0.35rem 0.75rem;font-size:0.75rem;display:inline-flex;align-items:center;gap:0.35rem;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:var(--text-secondary)" @click="showCloseShiftModal = true">
-                <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/>
-                  <line x1="9" y1="3" x2="9" y2="21"/>
-                </svg>
-                Register Shift
-              </button>
-              <button v-if="userRole === 'owner'" class="btn-primary" style="padding:0.35rem 0.75rem;font-size:0.75rem;gap:0.35rem;background:var(--gradient-purple)" @click="showAddProductModal = true">
-                <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
-                  <line x1="12" y1="5" x2="12" y2="19"/>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Add Item
-              </button>
-            </div>
-          </h3>
-          <div class="pos-catalog-grid">
-            <div v-for="product in skus" :key="product.id" class="pos-product-card">
-              <div>
-                <div style="font-weight:700;font-size:1.05rem;color:var(--text-primary);">@{{ product.name }}</div>
-                <div class="pos-product-meta">SKU: @{{ product.sku }}</div>
-                <div class="pos-product-meta">Category: <i>@{{ product.category }}</i></div>
-              </div>
-              
-              <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;">
-                <div style="display:flex;align-items:center;gap:0.4rem;">
-                  <div class="pos-product-price">LKR @{{ product.price.toFixed(2) }}</div>
-                  <button 
-                    type="button" 
-                    class="btn-mini" 
-                    style="padding:0.25rem 0.4rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:var(--text-secondary);cursor:pointer;border-radius:4px;" 
-                    title="Generate Barcode Sticker"
-                    @click.stop="openBarcodeModal(product)"
-                  >
-                    <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
-                      <path d="M3 5v14M6 5v14M10 5v14M14 5v14M17 5v14M21 5v14"/>
-                    </svg>
-                  </button>
-                </div>
-                <div>
-                  <span v-if="product.currentStock <= 0" class="badge danger">Out of Stock</span>
-                  <span v-else-if="product.currentStock <= product.safetyStock" class="badge warning">Low Stock (@{{ product.currentStock }})</span>
-                  <span v-else class="badge success">Stock: @{{ product.currentStock }}</span>
-                </div>
-              </div>
-
-              <button 
-                class="btn-primary" 
-                style="font-size:0.8rem;padding:0.4rem 0.8rem;margin-top:1rem;width:100%;justify-content:center;"
-                :disabled="product.currentStock <= 0"
-                @click="addToCart(product)"
-              >
-                Add to Cart
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Pane: Checkout Cart -->
-        <div class="card pos-cart-panel">
-          <div>
-            <h3 class="dashboard-card-title" style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                <span>Checkout Cart</span>
-                <span class="badge purple" style="font-size:0.75rem;">@{{ cart.length }} items</span>
-              </span>
-              <button 
-                v-if="cart.length > 0" 
-                class="btn-mini danger" 
-                style="padding:0.35rem 0.65rem;border-radius:4px;font-size:0.7rem;gap:0.25rem;display:flex;align-items:center;background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.2);color:var(--accent-rose)" 
-                @click="clearCart"
-              >
-                <svg style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                </svg>
-                Clear Cart
-              </button>
-            </h3>
-
-            <div v-if="cart.length === 0" style="text-align:center;padding:3rem 0;color:var(--text-muted);">
-              <svg style="width:48px;height:48px;margin:0 auto 1rem;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24">
-                <circle cx="9" cy="21" r="1"/>
-                <circle cx="20" cy="21" r="1"/>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-              </svg>
-              <div>Your cart is empty.</div>
-              <div style="font-size:0.75rem;margin-top:0.25rem;">Select products from the catalog to add them here.</div>
-            </div>
-
-            <div v-else class="cart-items-list">
-              <div v-for="item in cart" :key="item.product.id" class="cart-item-row">
-                <div style="flex:1;padding-right:0.5rem;">
-                  <div style="font-weight:600;font-size:0.85rem;">@{{ item.product.name }}</div>
-                  <div style="font-size:0.75rem;color:var(--text-muted);">LKR @{{ item.product.price.toFixed(2) }} each</div>
-                </div>
-
-                <div class="qty-counter">
-                  <button class="qty-btn" @click="removeFromCart(item)">&minus;</button>
-                  <span style="font-weight:600;font-size:0.85rem;min-width:16px;text-align:center;">@{{ item.quantity }}</span>
-                  <button class="qty-btn" @click="addToCart(item.product)">&plus;</button>
-                </div>
-
-                <div style="min-width:60px;text-align:right;font-weight:600;font-size:0.85rem;margin-left:0.75rem;">
-                  LKR @{{ (item.product.price * item.quantity).toFixed(2) }}
-                </div>
-
+        <div style="display:grid; grid-template-columns: 1fr 400px; gap: 1.5rem; align-items: start; margin-top: 1.5rem;">
+          
+          <!-- Left Column: Checkout Cart Items -->
+          <div class="card pos-cart-panel" style="min-height: 480px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h3 class="dashboard-card-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:1rem;">
+                <span style="display:inline-flex;align-items:center;gap:0.5rem">
+                  <span>Checkout Invoice Items</span>
+                  <span class="badge purple" style="font-size:0.75rem;">@{{ cart.length }} items</span>
+                </span>
                 <button 
-                  style="background:transparent;border:none;color:var(--accent-rose);cursor:pointer;margin-left:0.5rem;display:flex;align-items:center;"
-                  @click="deleteFromCart(item)"
+                  v-if="cart.length > 0" 
+                  class="btn-mini danger" 
+                  style="padding:0.35rem 0.65rem;border-radius:6px;font-size:0.7rem;gap:0.25rem;display:flex;align-items:center;background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.2);color:var(--accent-rose)" 
+                  @click="clearCart"
                 >
-                  <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                  <svg style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24">
                     <polyline points="3 6 5 6 21 6"/>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                   </svg>
+                  Clear Cart
                 </button>
+              </h3>
+
+              <div v-if="cart.length === 0" style="text-align:center;padding:7rem 0;color:var(--text-muted);">
+                <svg style="width:56px;height:56px;margin:0 auto 1.25rem;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24">
+                  <circle cx="9" cy="21" r="1"/>
+                  <circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                <div style="font-size:1.1rem;font-weight:600;color:var(--text-primary);">Your checkout cart is empty</div>
+                <div style="font-size:0.8rem;margin-top:0.35rem;max-width:320px;margin-left:auto;margin-right:auto;line-height:1.4;">Scan an item barcode or type a SKU prefix in the search bar above to begin creating an invoice.</div>
+              </div>
+
+              <div v-else class="cart-items-list" style="max-height:500px;overflow-y:auto;padding-right:0.5rem">
+                <div v-for="item in cart" :key="item.product.id" class="cart-item-row" style="background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.03);border-radius:10px;padding:0.85rem 1rem;margin-bottom:0.75rem;">
+                  <div style="flex:1;padding-right:0.5rem;">
+                    <div style="font-weight:600;font-size:0.95rem;color:var(--text-primary);">@{{ item.product.name }}</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.15rem;">SKU: <span style="font-family:monospace;">@{{ item.product.sku }}</span> | LKR @{{ item.product.price.toFixed(2) }} each</div>
+                  </div>
+
+                  <div class="qty-counter">
+                    <button class="qty-btn" @click="removeFromCart(item)">&minus;</button>
+                    <span style="font-weight:600;font-size:0.85rem;min-width:20px;text-align:center;">@{{ item.quantity }}</span>
+                    <button class="qty-btn" @click="addToCart(item.product)">&plus;</button>
+                  </div>
+
+                  <div style="min-width:85px;text-align:right;font-weight:700;font-size:0.95rem;margin-left:1rem;color:var(--text-primary);">
+                    LKR @{{ (item.product.price * item.quantity).toFixed(2) }}
+                  </div>
+
+                  <button 
+                    style="background:transparent;border:none;color:var(--accent-rose);cursor:pointer;margin-left:0.75rem;display:flex;align-items:center;padding:0.25rem;"
+                    @click="deleteFromCart(item)"
+                  >
+                    <svg style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          <div>
+          <!-- Right Column: Invoice Totals & Summary -->
+          <div class="card" style="padding:1.5rem;background:rgba(15,23,42,0.3);border:1px solid rgba(255,255,255,0.04);box-shadow:var(--shadow-lg);">
+            <h3 class="dashboard-card-title" style="margin-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:0.75rem;">Invoice Summary</h3>
+            
             <!-- Discount Option Panel -->
-            <div v-if="cart.length > 0" style="margin-bottom:1rem;padding:0.75rem 1rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:8px;">
-              <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.025em;display:flex;justify-content:space-between;align-items:center;">
-                <span>Cart Discount</span>
+            <div v-if="cart.length > 0" style="margin-bottom:1.25rem;padding:0.85rem 1rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;">
+              <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.025em;display:flex;justify-content:space-between;align-items:center;">
+                <span>Invoice Discount</span>
                 <span v-if="discountValue > 0" style="color:#fb7185;font-weight:700;">
                   - LKR @{{ discountAmount.toFixed(2) }}
                 </span>
@@ -932,20 +930,20 @@
               </div>
             </div>
 
-            <div class="cart-totals-section">
-              <div style="display:flex;justify-content:space-between;">
-                <span style="color:var(--text-secondary);">Subtotal:</span>
-                <strong>LKR @{{ cartSubtotal.toFixed(2) }}</strong>
+            <div class="cart-totals-section" style="display:flex;flex-direction:column;gap:0.75rem;font-size:0.9rem;">
+              <div style="display:flex;justify-content:space-between;color:var(--text-secondary);">
+                <span>Subtotal:</span>
+                <span style="font-weight:600;color:var(--text-primary);">LKR @{{ cartSubtotal.toFixed(2) }}</span>
               </div>
               <div v-if="discountValue > 0" style="display:flex;justify-content:space-between;color:#fb7185;">
                 <span>Discount (@{{ discountType === 'percent' ? discountValue + '%' : 'LKR ' + discountValue }}):</span>
-                <strong>- LKR @{{ discountAmount.toFixed(2) }}</strong>
+                <span style="font-weight:600;">- LKR @{{ discountAmount.toFixed(2) }}</span>
               </div>
-              <div style="display:flex;justify-content:space-between;">
-                <span style="color:var(--text-secondary);">VAT / Tax (@{{ activeTenantTaxRate }}%):</span>
-                <strong>LKR @{{ cartTax.toFixed(2) }}</strong>
+              <div style="display:flex;justify-content:space-between;color:var(--text-secondary);">
+                <span>VAT / Tax (@{{ activeTenantTaxRate }}%):</span>
+                <span style="font-weight:600;color:var(--text-primary);">LKR @{{ cartTax.toFixed(2) }}</span>
               </div>
-              <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.05);padding-top:0.5rem;font-size:1.05rem;color:var(--text-primary);">
+              <div style="display:flex;justify-content:space-between;border-top:1px dashed rgba(255,255,255,0.08);padding-top:0.75rem;font-size:1.15rem;color:var(--text-primary);margin-top:0.25rem;">
                 <span>Total Amount:</span>
                 <strong style="color:var(--accent-emerald);">LKR @{{ cartTotal.toFixed(2) }}</strong>
               </div>
@@ -953,15 +951,225 @@
 
             <button 
               class="btn-primary" 
-              style="width:100%;margin-top:1.25rem;justify-content:center;font-size:0.95rem;padding:0.75rem;"
+              style="width:100%;margin-top:1.5rem;justify-content:center;font-size:1rem;padding:0.85rem;border-radius:8px;font-weight:700;background:var(--gradient-purple);"
               :disabled="cart.length === 0"
               @click="startCheckoutFlow"
             >
               Complete Sale (Checkout)
             </button>
           </div>
+
         </div>
 
+      </div>
+
+      <!-- Panel: Inventory Management -->
+      <div v-else-if="activeTab === 'inventory'">
+        <div class="card">
+          <h3 class="dashboard-card-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <span>Product Catalog Inventory</span>
+            <button v-if="userRole === 'owner'" class="btn-primary" style="padding:0.45rem 0.85rem;font-size:0.75rem;gap:0.35rem;background:var(--gradient-purple)" @click="showAddProductModal = true">
+              <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add Item
+            </button>
+          </h3>
+
+          <div class="pos-catalog-grid">
+            <div v-for="product in skus" :key="product.id" class="pos-product-card">
+              <div>
+                <div style="font-weight:700;font-size:1.05rem;color:var(--text-primary);">@{{ product.name }}</div>
+                <div class="pos-product-meta">SKU: @{{ product.sku }}</div>
+                <div class="pos-product-meta">Category: <i>@{{ product.category }}</i></div>
+              </div>
+              
+              <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;">
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <div class="pos-product-price">LKR @{{ product.price.toFixed(2) }}</div>
+                  <button 
+                    type="button" 
+                    class="btn-mini" 
+                    style="padding:0.25rem 0.4rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:var(--text-secondary);cursor:pointer;border-radius:4px;" 
+                    title="Generate Barcode Sticker"
+                    @click.stop="openBarcodeModal(product)"
+                  >
+                    <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                      <path d="M3 5v14M6 5v14M10 5v14M14 5v14M17 5v14M21 5v14"/>
+                    </svg>
+                  </button>
+                </div>
+                <div>
+                  <span v-if="product.currentStock <= 0" class="badge danger">Out of Stock</span>
+                  <span v-else-if="product.currentStock <= product.safetyStock" class="badge warning">Low Stock (@{{ product.currentStock }})</span>
+                  <span v-else class="badge success">Stock: @{{ product.currentStock }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Today's Transaction History -->
+      <div v-else-if="activeTab === 'sales_history'">
+        <div class="card" style="padding:2rem;">
+          <div v-if="transactionHistory.length === 0" style="text-align:center;padding:4rem 0;color:var(--text-muted);">
+            <svg style="width:48px;height:48px;margin:0 auto 1rem;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <div>No transactions recorded yet today.</div>
+          </div>
+
+          <div v-else style="max-height: 600px; overflow-y: auto; padding-right: 0.5rem">
+            <div v-for="receipt in transactionHistory" :key="receipt.id" class="premium-list-item-card">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;flex-wrap:wrap;gap:0.5rem">
+                <div>
+                  <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem;font-family:monospace;letter-spacing:0.02em;">#@{{ receipt.id }}</span>
+                  <span style="font-size:0.75rem;color:var(--text-muted);margin-left:0.5rem">@{{ new Date(receipt.time).toLocaleTimeString() }}</span>
+                </div>
+                <div style="display:flex;gap:0.4rem;align-items:center">
+                  <strong style="color:var(--accent-emerald);font-size:1.1rem;margin-right:0.5rem;font-family:'Outfit';">LKR @{{ receipt.total.toFixed(2) }}</strong>
+                  <button type="button" class="btn-mini" style="padding:0.4rem 0.75rem;border-radius:6px;font-size:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);color:var(--text-secondary);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'" @click="reprintReceipt(receipt)">
+                    Reprint
+                  </button>
+                  <button type="button" class="btn-mini danger" style="padding:0.4rem 0.75rem;border-radius:6px;font-size:0.7rem;cursor:pointer;background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.25);color:#fb7185;transition:all 0.15s;" onmouseover="this.style.background='var(--gradient-rose)';this.style.color='#fff';" onmouseout="this.style.background='rgba(244,63,94,0.1)';this.style.color='#fb7185';" @click="voidTransaction(receipt.id)">
+                    Void
+                  </button>
+                </div>
+              </div>
+
+              <!-- Items list inside the history card -->
+              <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:0.75rem 1rem;font-size:0.8rem;color:var(--text-secondary);border:1px solid rgba(255,255,255,0.02)">
+                <div v-for="item in receipt.items" :key="item.sku" style="display:flex;justify-content:space-between;margin-bottom:0.35rem">
+                  <span>@{{ item.name }} (x@{{ item.quantity }})</span>
+                  <span style="font-weight:600;">LKR @{{ item.subtotal.toFixed(2) }}</span>
+                </div>
+                <div style="border-top:1px dashed rgba(255,255,255,0.08);margin-top:0.5rem;padding-top:0.5rem;display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted)">
+                  <span>Subtotal: LKR @{{ receipt.subtotal.toFixed(2) }} | Discount: LKR @{{ receipt.discount.toFixed(2) }} | Tax: LKR @{{ receipt.tax.toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Register Drawer Shift Management -->
+      <div v-else-if="activeTab === 'register_shift'">
+        <div class="card" style="max-width: 600px; margin: 0 auto; padding: 2rem;">
+          
+          <!-- Shift is CLOSED: Open Shift Form -->
+          <div v-if="!activeShift">
+            <h3 style="font-family:'Outfit';font-weight:700;font-size:1.3rem;margin-bottom:1rem;color:var(--text-primary);display:inline-flex;align-items:center;gap:0.5rem">
+              <svg style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="9" y1="3" x2="9" y2="21"/>
+              </svg>
+              Open Register Shift
+            </h3>
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1.5rem;line-height:1.4;">
+              Opening a shift initializes the register drawer. Specify the starting float cash for change.
+            </p>
+            
+            <form @submit.prevent="openShift">
+              <div style="margin-bottom: 1.5rem;">
+                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">Starting Float Cash (LKR)</label>
+                <input 
+                  type="number" 
+                  class="premium-input-calculator" 
+                  placeholder="0.00" 
+                  min="0" 
+                  v-model.number="openingFloat" 
+                  required
+                >
+              </div>
+              <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 0.85rem; font-size: 1rem; font-weight: 700; background: var(--gradient-purple); border-radius: 8px;">
+                Open Register Shift
+              </button>
+            </form>
+          </div>
+
+          <!-- Shift is OPEN: Active Shift Report -->
+          <div v-else style="color:var(--text-secondary);font-size:0.9rem;">
+            <div class="stats-card-premium" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+              <div>
+                <span style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.25rem;">Shift Started</span>
+                <strong style="color:var(--text-primary);">@{{ new Date(activeShift.opened_at).toLocaleTimeString() }}</strong>
+              </div>
+              <div>
+                <span style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.25rem;">Starting Float</span>
+                <strong style="color:var(--accent-purple);">LKR @{{ activeShift.opening_float.toFixed(2) }}</strong>
+              </div>
+            </div>
+
+            <h3 style="font-size:0.8rem;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.75rem;font-weight:700;letter-spacing:0.05em;">Sales Breakdown</h3>
+            <div style="background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.04);padding:1rem;border-radius:10px;margin-bottom:1.5rem;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:0.6rem;">
+                <span style="color:var(--text-secondary);">Cash Sales:</span>
+                <strong style="color:var(--text-primary);">LKR @{{ activeShift.cash_sales.toFixed(2) }}</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:0.6rem;">
+                <span style="color:var(--text-secondary);">Credit Card Sales:</span>
+                <strong style="color:var(--text-primary);">LKR @{{ activeShift.card_sales.toFixed(2) }}</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:0.6rem;">
+                <span style="color:var(--text-secondary);">QR Mobile Sales:</span>
+                <strong style="color:var(--text-primary);">LKR @{{ activeShift.qr_sales.toFixed(2) }}</strong>
+              </div>
+              <div style="border-top:1px dashed rgba(255,255,255,0.08);margin-top:0.6rem;padding-top:0.6rem;display:flex;justify-content:space-between;font-weight:700;color:var(--text-primary);">
+                <span>Total Shift Sales:</span>
+                <strong style="color:var(--accent-purple);">LKR @{{ activeShift.total_sales.toFixed(2) }}</strong>
+              </div>
+            </div>
+
+            <div style="background:rgba(16,185,129,0.03);border:1px solid rgba(16,185,129,0.12);padding:1rem;border-radius:10px;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <span style="font-size:0.75rem;color:var(--text-muted);display:block;font-weight:600;">Expected Drawer Cash</span>
+                <span style="font-size:0.65rem;color:var(--text-muted);">(Starting Float + Cash Sales)</span>
+              </div>
+              <strong style="font-size:1.35rem;color:var(--accent-emerald);">LKR @{{ activeShift.expected_cash.toFixed(2) }}</strong>
+            </div>
+
+            <form @submit.prevent="closeShift">
+              <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">Actual Drawer Cash Counted (LKR)</label>
+              <input 
+                type="number" 
+                class="premium-input-calculator" 
+                placeholder="0.00" 
+                min="0" 
+                v-model.number="actualCashCounted" 
+                required
+              >
+              <button type="submit" class="btn-primary danger" style="width:100%;justify-content:center;padding:0.85rem;font-size:1rem;font-weight:700;border-radius:10px;background:var(--gradient-rose);">
+                Close Shift & Lock Register
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Panel: Reports Placeholder -->
+      <div v-else-if="activeTab === 'reports'">
+        <div class="card" style="text-align:center;padding:5rem 2rem;max-width:600px;margin: 0 auto;">
+          <div style="background:rgba(139,92,246,0.1); width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 1.5rem;">
+            <svg style="width:36px;height:36px;stroke:var(--accent-purple);fill:none;stroke-width:2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <h2 style="font-family:'Outfit';font-weight:800;font-size:1.6rem;color:var(--text-primary);margin-bottom:0.75rem;">Premium Executive Reports</h2>
+          <p style="font-size:0.9rem;color:var(--text-secondary);max-width:400px;margin: 0 auto 2rem;line-height:1.5;">
+            Real-time financial audits, inventory valuation ledgers, tax compliance summaries, and margin reports are scheduled for release in the upcoming service update.
+          </p>
+          <span class="badge purple" style="padding:0.5rem 1rem;font-size:0.75rem;">Status: Scheduled for Rollout</span>
+        </div>
       </div>
 
       </div>

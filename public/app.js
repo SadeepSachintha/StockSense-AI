@@ -2161,12 +2161,16 @@ Inventory Management Team`;
     };
 
     watch(activeTab, (newTab) => {
-      if (userRole.value === 'cashier' && newTab !== 'pos') {
-        activeTab.value = 'pos';
+      if (userRole.value === 'cashier') {
+        if (!['pos', 'inventory', 'sales_history', 'register_shift'].includes(newTab)) {
+          activeTab.value = 'pos';
+        }
       } else if (userRole.value === 'owner') {
-        if (subscriptionTier.value === 'free' && !['overview', 'pos'].includes(newTab)) {
+        if (['pos', 'sales_history', 'register_shift'].includes(newTab)) {
           activeTab.value = 'overview';
-        } else if (subscriptionTier.value === 'basic' && ['forecast', 'mlops'].includes(newTab)) {
+        } else if (subscriptionTier.value === 'free' && !['overview', 'inventory', 'reports'].includes(newTab)) {
+          activeTab.value = 'overview';
+        } else if (subscriptionTier.value === 'basic' && ['forecast', 'mlops', 'reports'].includes(newTab)) {
           activeTab.value = 'overview';
         }
       }
@@ -2175,10 +2179,14 @@ Inventory Management Team`;
     onMounted(async () => {
       // Gating validations on load
       if (userRole.value === 'cashier') {
-        activeTab.value = 'pos';
+        if (!['pos', 'inventory', 'sales_history', 'register_shift'].includes(activeTab.value)) {
+          activeTab.value = 'pos';
+        }
       } else if (userRole.value === 'owner') {
-        if (subscriptionTier.value === 'free') {
-          if (!['overview', 'pos'].includes(activeTab.value)) {
+        if (['pos', 'sales_history', 'register_shift'].includes(activeTab.value)) {
+          activeTab.value = 'overview';
+        } else if (subscriptionTier.value === 'free') {
+          if (!['overview', 'inventory', 'reports'].includes(activeTab.value)) {
             activeTab.value = 'overview';
           }
         } else if (subscriptionTier.value === 'basic') {
