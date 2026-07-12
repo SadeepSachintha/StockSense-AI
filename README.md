@@ -262,3 +262,10 @@ Recently, StockSense AI underwent six core enterprise production upgrades:
 - **Auto-Calculated Demand Volatility:** Evaluates daily sales transactions over the past 30 days to compute standard deviation automatically.
 - **Supply Chain Volatility Simulator:** Exposes a manual slider override to simulate standard deviation variations, with a quick reset.
 - **Database Writeback Integration:** A single click writes the calculated safety stock threshold back to the database in real-time, immediately updating restocking dashboard metrics.
+
+### L. Cashier Views Redesign, Sidebar Navigation & Gating
+- **Role-Based Tab Access Isolation:** Restructured the application layout shell to completely isolate operational permissions. Cashiers are restricted to POS Checkout, Inventory, Sales History, and Register Shift tabs. Owners are restricted to SaaS Operations Overview, Demand Forecast, Restock Center, Analytics, MLOps Health, Inventory, and Reports tabs. Manual route overrides dynamically fall back.
+- **POS Checkout & Invoicing Redesign:** Rebuilt the checkout cart to span the left pane of a premium invoicing grid layout, with invoice pricing details on the right.
+- **Dedicated Sidebar Navigation Tabs:** Converted previously nested Sales History and Active Register Shift modals into clean, inline sidebar tab view screens.
+- **Sleek Reports Tab:** Prepared a premium analytics reports placeholder screen for future executive insights.
+- **Visual Enhancements:** Applied rich glassmorphism dark-theme overrides, neon indicator highlights, smooth scale-up hover animations, and customized calculator-styled counted cash inputs.
