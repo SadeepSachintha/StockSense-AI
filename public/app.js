@@ -2295,8 +2295,84 @@ Inventory Management Team`;
       }, 15000);
     });
 
+    // Premium Analytics & Reports Data
+    const reportsData = computed(() => {
+      let totalRevenue = 0;
+      let totalDiscount = 0;
+      let totalTax = 0;
+      let totalCOGS = 0;
+      
+      transactionHistory.value.forEach(t => {
+        totalDiscount += parseFloat(t.discount || 0);
+        totalTax += parseFloat(t.tax || 0);
+      });
+
+      flatTransactions.value.forEach(tx => {
+        totalRevenue += tx.subtotal;
+        const prod = skus.value.find(p => p.sku === tx.sku);
+        const costPrice = prod ? (prod.costPrice || (prod.price * 0.7)) : (tx.price * 0.7);
+        totalCOGS += costPrice * tx.quantity;
+      });
+
+      const netRevenue = Math.max(0, totalRevenue - totalDiscount);
+      const grossProfit = Math.max(0, netRevenue - totalCOGS);
+      const netProfitMargin = netRevenue > 0 ? (grossProfit / netRevenue) * 100 : 0;
+
+      const payments = {
+        cash: { count: 0, amount: 0 },
+        card: { count: 0, amount: 0 },
+        qr: { count: 0, amount: 0 }
+      };
+      
+      transactionHistory.value.forEach(t => {
+        const pm = (t.payment_method || 'cash').toLowerCase();
+        let key = 'cash';
+        if (pm.includes('card')) {
+          key = 'card';
+        } else if (pm.includes('qr') || pm.includes('mobile') || pm.includes('bank') || pm.includes('app')) {
+          key = 'qr';
+        }
+        payments[key].count++;
+        payments[key].amount += t.total;
+      });
+
+      let totalLockedCapital = 0;
+      let totalPotentialValue = 0;
+      skus.value.forEach(p => {
+        const cost = p.costPrice || (p.price * 0.7);
+        totalLockedCapital += p.currentStock * cost;
+        totalPotentialValue += p.currentStock * p.price;
+      });
+
+      const totalSKUs = skus.value.length;
+      const lowStockAlerts = skus.value.filter(p => p.currentStock <= p.safetyStock && p.currentStock > 0).length;
+      const outOfStockAlerts = skus.value.filter(p => p.currentStock === 0).length;
+
+      return {
+        totalRevenue,
+        totalDiscount,
+        totalTax,
+        netRevenue,
+        totalCOGS,
+        grossProfit,
+        netProfitMargin,
+        payments,
+        totalLockedCapital,
+        totalPotentialValue,
+        totalSKUs,
+        lowStockAlerts,
+        outOfStockAlerts
+      };
+    });
+
+    const printExecutiveReport = () => {
+      window.print();
+    };
+
     return {
       activeTab,
+      reportsData,
+      printExecutiveReport,
       systemStatus,
       systemStatusClass,
       savedCapital,

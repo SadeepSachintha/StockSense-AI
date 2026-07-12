@@ -1711,3 +1711,43 @@ body {
   background: rgba(255, 255, 255, 0.025);
   border-color: rgba(255, 255, 255, 0.08);
 }
+
+/* Print Media Styles */
+.print-only {
+  display: none;
+}
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .app-container, .sidebar, .main-content, .modal-overlay, .restock-alert-simulation-toast {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  .print-only {
+    display: block !important;
+    visibility: visible !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white !important;
+    color: black !important;
+  }
+  .print-only * {
+    visibility: visible !important;
+  }
+  .print-only table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+  }
+  .print-only th, .print-only td {
+    border-bottom: 1px solid #000 !important;
+    padding: 8px !important;
+    color: #000 !important;
+  }
+}

@@ -1152,24 +1152,173 @@
         </div>
       </div>
 
-      <!-- Panel: Reports Placeholder -->
+      <!-- Panel: Executive Reports Panel -->
       <div v-else-if="activeTab === 'reports'">
-        <div class="card" style="text-align:center;padding:5rem 2rem;max-width:600px;margin: 0 auto;">
-          <div style="background:rgba(139,92,246,0.1); width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 1.5rem;">
-            <svg style="width:36px;height:36px;stroke:var(--accent-purple);fill:none;stroke-width:2" viewBox="0 0 24 24">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
-            </svg>
+        
+        <!-- Header Actions -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <h2 style="font-family:'Outfit'; font-weight:800; font-size:1.5rem; color:var(--text-primary); margin:0;">SaaS Executive Insights & Audits</h2>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin:0.25rem 0 0;">Printable tax statements, inventory ledgers, and financial reviews.</p>
           </div>
-          <h2 style="font-family:'Outfit';font-weight:800;font-size:1.6rem;color:var(--text-primary);margin-bottom:0.75rem;">Premium Executive Reports</h2>
-          <p style="font-size:0.9rem;color:var(--text-secondary);max-width:400px;margin: 0 auto 2rem;line-height:1.5;">
-            Real-time financial audits, inventory valuation ledgers, tax compliance summaries, and margin reports are scheduled for release in the upcoming service update.
-          </p>
-          <span class="badge purple" style="padding:0.5rem 1rem;font-size:0.75rem;">Status: Scheduled for Rollout</span>
+          <button type="button" class="btn-primary" style="background:var(--gradient-purple); padding:0.6rem 1.25rem; font-size:0.85rem; gap:0.5rem;" @click="printExecutiveReport">
+            <svg style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2" viewBox="0 0 24 24">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            Print Executive Audit
+          </button>
         </div>
+
+        <!-- 1. KPI Financial Summaries -->
+        <div class="dashboard-grid-1x4" style="margin-bottom:1.5rem">
+          <div class="card">
+            <span style="font-size:0.7rem; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Total Sales Revenue</span>
+            <h3 style="font-size:1.4rem; font-weight:800; margin:0.5rem 0 0.25rem; color:var(--text-primary);">LKR @{{ reportsData.totalRevenue.toFixed(2) }}</h3>
+            <span style="font-size:0.65rem; color:var(--text-muted);">Cumulative cashier receipts</span>
+          </div>
+          
+          <div class="card">
+            <span style="font-size:0.7rem; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Cost of Goods Sold (COGS)</span>
+            <h3 style="font-size:1.4rem; font-weight:800; margin:0.5rem 0 0.25rem; color:#f43f5e;">LKR @{{ reportsData.totalCOGS.toFixed(2) }}</h3>
+            <span style="font-size:0.65rem; color:var(--text-muted);">Estimated wholesale product cost</span>
+          </div>
+
+          <div class="card">
+            <span style="font-size:0.7rem; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Net Gross Profit</span>
+            <h3 style="font-size:1.4rem; font-weight:800; margin:0.5rem 0 0.25rem; color:var(--accent-emerald);">LKR @{{ reportsData.grossProfit.toFixed(2) }}</h3>
+            <span style="font-size:0.65rem; color:var(--text-muted);">Profit margin after discount adjustments</span>
+          </div>
+
+          <div class="card">
+            <span style="font-size:0.7rem; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Net Profit Margin</span>
+            <h3 style="font-size:1.4rem; font-weight:800; margin:0.5rem 0 0.25rem; color:var(--accent-purple);">@{{ reportsData.netProfitMargin.toFixed(1) }}%</h3>
+            <span style="font-size:0.65rem; color:var(--text-muted);">Gross margin conversion rate</span>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 360px; gap:1.5rem; margin-bottom:1.5rem; align-items:start;" class="reports-split-view">
+          
+          <!-- 2. Inventory Asset Valuation Ledger -->
+          <div class="card" style="padding:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+              <h3 class="dashboard-card-title" style="margin:0;">Asset Valuation & Stock Ledger</h3>
+              <span class="badge purple" style="font-size:0.65rem;">@{{ reportsData.totalSKUs }} SKUs Cataloged</span>
+            </div>
+            
+            <div style="overflow-x:auto">
+              <table class="inventory-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:0.8rem">
+                <thead>
+                  <tr style="border-bottom:1px solid rgba(255,255,255,0.06); color:var(--text-secondary);">
+                    <th style="padding:0.75rem 0.5rem; font-weight:700">SKU / Product</th>
+                    <th style="padding:0.75rem 0.5rem; font-weight:700; text-align:right">Stock</th>
+                    <th style="padding:0.75rem 0.5rem; font-weight:700; text-align:right">Cost Price</th>
+                    <th style="padding:0.75rem 0.5rem; font-weight:700; text-align:right">Retail Price</th>
+                    <th style="padding:0.75rem 0.5rem; font-weight:700; text-align:right">Asset (Cost)</th>
+                    <th style="padding:0.75rem 0.5rem; font-weight:700; text-align:right">Asset (Retail)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="item in skus" :key="item.sku" style="border-bottom:1px solid rgba(255,255,255,0.03); color:var(--text-secondary);" onmouseover="this.style.background='rgba(255,255,255,0.01)'" onmouseout="this.style.background='transparent'">
+                    <td style="padding:0.75rem 0.5rem">
+                      <div style="font-weight:700; color:var(--text-primary)">@{{ item.name }}</div>
+                      <div style="font-size:0.7rem; color:var(--text-muted)">@{{ item.sku }}</div>
+                    </td>
+                    <td style="padding:0.75rem 0.5rem; text-align:right; font-weight:700" :class="item.currentStock <= item.safetyStock ? 'text-rose-400' : 'text-slate-300'">
+                      @{{ item.currentStock }}
+                    </td>
+                    <td style="padding:0.75rem 0.5rem; text-align:right; font-family:monospace">LKR @{{ item.costPrice.toFixed(2) }}</td>
+                    <td style="padding:0.75rem 0.5rem; text-align:right; font-family:monospace">LKR @{{ item.price.toFixed(2) }}</td>
+                    <td style="padding:0.75rem 0.5rem; text-align:right; font-family:monospace; font-weight:700">LKR @{{ (item.currentStock * item.costPrice).toFixed(2) }}</td>
+                    <td style="padding:0.75rem 0.5rem; text-align:right; font-family:monospace; font-weight:700">LKR @{{ (item.currentStock * item.price).toFixed(2) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Ledger Valuation Aggregates -->
+            <div style="display:flex; justify-content:flex-end; gap:2rem; border-top:1px solid rgba(255,255,255,0.06); padding-top:1rem; margin-top:1rem; flex-wrap:wrap; font-size:0.85rem">
+              <div>
+                <span style="color:var(--text-muted); font-size:0.75rem; display:block">Locked Capital (Cost Value)</span>
+                <strong style="color:var(--text-primary); font-size:1.15rem; font-family:'Outfit';">LKR @{{ reportsData.totalLockedCapital.toFixed(2) }}</strong>
+              </div>
+              <div>
+                <span style="color:var(--text-muted); font-size:0.75rem; display:block">Potential Revenue (Retail Value)</span>
+                <strong style="color:var(--accent-purple); font-size:1.15rem; font-family:'Outfit';">LKR @{{ reportsData.totalPotentialValue.toFixed(2) }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Side Columns (Fulfillment & Payment Methods breakdown) -->
+          <div style="display:flex; flex-direction:column; gap:1.5rem">
+            
+            <!-- 3. Fulfillment Health -->
+            <div class="card" style="padding:1.5rem">
+              <h3 class="dashboard-card-title" style="margin-bottom:1rem">Fulfillment Health</h3>
+              
+              <div style="display:flex; flex-direction:column; gap:0.75rem">
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:0.6rem 0.75rem; border-radius:8px">
+                  <span style="font-size:0.8rem; color:var(--text-secondary)">Total cataloged SKUs</span>
+                  <span style="font-weight:700; color:var(--text-primary); font-size:0.9rem">@{{ reportsData.totalSKUs }}</span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(244,63,94,0.06); border:1px solid rgba(244,63,94,0.15); padding:0.6rem 0.75rem; border-radius:8px">
+                  <span style="font-size:0.8rem; color:#fb7185">Low Stock Warnings</span>
+                  <span style="font-weight:700; color:#fb7185; font-size:0.9rem">@{{ reportsData.lowStockAlerts }}</span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.25); padding:0.6rem 0.75rem; border-radius:8px">
+                  <span style="font-size:0.8rem; color:#fb7185; font-weight:700">Stockouts (0 stock)</span>
+                  <span style="font-weight:800; color:#f43f5e; font-size:0.95rem">@{{ reportsData.outOfStockAlerts }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Payment Distribution -->
+            <div class="card" style="padding:1.5rem">
+              <h3 class="dashboard-card-title" style="margin-bottom:1rem">Payment Gateways</h3>
+              
+              <div style="display:flex; flex-direction:column; gap:0.85rem">
+                <!-- Cash -->
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.25rem">
+                    <span>Cash Checkout (@{{ reportsData.payments.cash.count }} orders)</span>
+                    <strong style="color:var(--text-primary)">LKR @{{ reportsData.payments.cash.amount.toFixed(2) }}</strong>
+                  </div>
+                  <div style="width:100%; height:6px; background:rgba(255,255,255,0.04); border-radius:3px; overflow:hidden">
+                    <div style="height:100%; background:var(--accent-emerald); border-radius:3px;" :style="{ width: (reportsData.totalRevenue > 0 ? (reportsData.payments.cash.amount / reportsData.totalRevenue * 100) : 0) + '%' }"></div>
+                  </div>
+                </div>
+
+                <!-- Card -->
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.25rem">
+                    <span>Credit/Debit Card (@{{ reportsData.payments.card.count }} orders)</span>
+                    <strong style="color:var(--text-primary)">LKR @{{ reportsData.payments.card.amount.toFixed(2) }}</strong>
+                  </div>
+                  <div style="width:100%; height:6px; background:rgba(255,255,255,0.04); border-radius:3px; overflow:hidden">
+                    <div style="height:100%; background:var(--accent-purple); border-radius:3px;" :style="{ width: (reportsData.totalRevenue > 0 ? (reportsData.payments.card.amount / reportsData.totalRevenue * 100) : 0) + '%' }"></div>
+                  </div>
+                </div>
+
+                <!-- QR -->
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.25rem">
+                    <span>LankaQR / Mobile QR (@{{ reportsData.payments.qr.count }} orders)</span>
+                    <strong style="color:var(--text-primary)">LKR @{{ reportsData.payments.qr.amount.toFixed(2) }}</strong>
+                  </div>
+                  <div style="width:100%; height:6px; background:rgba(255,255,255,0.04); border-radius:3px; overflow:hidden">
+                    <div style="height:100%; background:#3b82f6; border-radius:3px;" :style="{ width: (reportsData.totalRevenue > 0 ? (reportsData.payments.qr.amount / reportsData.totalRevenue * 100) : 0) + '%' }"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
 
       <div v-else-if="activeTab === 'mlops'" class="dashboard-grid-1x2">
@@ -2391,6 +2540,113 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Printable Audit Report Area -->
+    <div class="print-only" style="padding: 2rem; font-family: 'Inter', sans-serif;">
+      <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 1.5rem; margin-bottom: 2rem;">
+        <h1 style="font-size: 2.2rem; margin: 0; font-family: 'Outfit', sans-serif; font-weight: 800; color: #000;">StockSense AI</h1>
+        <p style="font-size: 0.95rem; margin: 0.25rem 0 0; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; color: #000;">Executive Financial & Valuation Audit Report</p>
+        <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.8rem; font-weight: 500; color: #000;">
+          <span>Tenant Context: <strong>@{{ activeTenantId }}</strong></span>
+          <span>Generated At: <strong>@{{ new Date().toLocaleString() }}</strong></span>
+        </div>
+      </div>
+
+      <!-- 1. Financial Performance Table -->
+      <h2 style="font-size: 1.35rem; border-bottom: 1px solid #000; padding-bottom: 0.4rem; margin-bottom: 1rem; font-family: 'Outfit'; font-weight: 700; color: #000;">I. Financial Performance Summary</h2>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 2rem; font-size: 0.85rem;">
+        <thead>
+          <tr style="border-bottom: 1px solid #000; text-align: left; color: #000;">
+            <th style="padding: 0.5rem 0; font-weight: 700;">Financial Metrics</th>
+            <th style="padding: 0.5rem 0; font-weight: 700; text-align: right;">Amount (LKR) / Rate</th>
+          </tr>
+        </thead>
+        <tbody style="color: #000;">
+          <tr style="border-bottom: 1px dashed #ccc;">
+            <td style="padding: 0.5rem 0;">Total Sales Revenue (Cashier Receipts)</td>
+            <td style="padding: 0.5rem 0; text-align: right; font-weight: 700;">LKR @{{ reportsData.totalRevenue.toFixed(2) }}</td>
+          </tr>
+          <tr style="border-bottom: 1px dashed #ccc;">
+            <td style="padding: 0.5rem 0;">Cost of Goods Sold (COGS)</td>
+            <td style="padding: 0.5rem 0; text-align: right;">LKR @{{ reportsData.totalCOGS.toFixed(2) }}</td>
+          </tr>
+          <tr style="border-bottom: 1px dashed #ccc;">
+            <td style="padding: 0.5rem 0;">Gross Profit Margin</td>
+            <td style="padding: 0.5rem 0; text-align: right; font-weight: 700;">LKR @{{ reportsData.grossProfit.toFixed(2) }}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #000;">
+            <td style="padding: 0.5rem 0;">Net Profit Margin</td>
+            <td style="padding: 0.5rem 0; text-align: right; font-weight: 700;">@{{ reportsData.netProfitMargin.toFixed(1) }}%</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 2. Payment breakdown -->
+      <h2 style="font-size: 1.35rem; border-bottom: 1px solid #000; padding-bottom: 0.4rem; margin-bottom: 1rem; font-family: 'Outfit'; font-weight: 700; color: #000;">II. Payment Gateway Distribution</h2>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 2rem; font-size: 0.85rem;">
+        <thead>
+          <tr style="border-bottom: 1px solid #000; text-align: left; color: #000;">
+            <th style="padding: 0.5rem 0; font-weight: 700;">Payment Method</th>
+            <th style="padding: 0.5rem 0; font-weight: 700; text-align: right;">Orders Count</th>
+            <th style="padding: 0.5rem 0; font-weight: 700; text-align: right;">Total Received</th>
+          </tr>
+        </thead>
+        <tbody style="color: #000;">
+          <tr style="border-bottom: 1px dashed #ccc;">
+            <td style="padding: 0.5rem 0;">Cash transactions</td>
+            <td style="padding: 0.5rem 0; text-align: right;">@{{ reportsData.payments.cash.count }}</td>
+            <td style="padding: 0.5rem 0; text-align: right;">LKR @{{ reportsData.payments.cash.amount.toFixed(2) }}</td>
+          </tr>
+          <tr style="border-bottom: 1px dashed #ccc;">
+            <td style="padding: 0.5rem 0;">Card payments</td>
+            <td style="padding: 0.5rem 0; text-align: right;">@{{ reportsData.payments.card.count }}</td>
+            <td style="padding: 0.5rem 0; text-align: right;">LKR @{{ reportsData.payments.card.amount.toFixed(2) }}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #000;">
+            <td style="padding: 0.5rem 0;">LankaQR & Mobile QR</td>
+            <td style="padding: 0.5rem 0; text-align: right;">@{{ reportsData.payments.qr.count }}</td>
+            <td style="padding: 0.5rem 0; text-align: right;">LKR @{{ reportsData.payments.qr.amount.toFixed(2) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 3. Inventory valuation ledger -->
+      <h2 style="font-size: 1.35rem; border-bottom: 1px solid #000; padding-bottom: 0.4rem; margin-bottom: 1rem; font-family: 'Outfit'; font-weight: 700; color: #000;">III. Inventory Asset Valuation & Stock Ledger</h2>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.85rem;">
+        <thead>
+          <tr style="border-bottom: 1px solid #000; text-align: left; color: #000;">
+            <th style="padding: 0.5rem 0; font-weight: 700;">Product SKU / Name</th>
+            <th style="padding: 0.5rem 0; font-weight: 700; text-align: right;">Stock (Units)</th>
+            <th style="padding: 0.5rem 0; font-weight: 700; text-align: right;">Unit Cost</th>
+            <th style="padding: 0.5rem 0; font-weight: 700; text-align: right;">Unit Retail</th>
+            <th style="padding: 0.5rem 0; font-weight: 700; text-align: right;">Locked Capital (Cost)</th>
+            <th style="padding: 0.5rem 0; font-weight: 700; text-align: right;">Retail Value</th>
+          </tr>
+        </thead>
+        <tbody style="color: #000;">
+          <tr v-for="item in skus" :key="item.sku" style="border-bottom: 1px dashed #ccc;">
+            <td style="padding: 0.5rem 0;">
+              <div style="font-weight:700">@{{ item.name }}</div>
+              <div style="font-size:0.7rem;color:#555">@{{ item.sku }}</div>
+            </td>
+            <td style="padding: 0.5rem 0; text-align: right; font-weight: 700;">@{{ item.currentStock }}</td>
+            <td style="padding: 0.5rem 0; text-align: right;">LKR @{{ item.costPrice.toFixed(2) }}</td>
+            <td style="padding: 0.5rem 0; text-align: right;">LKR @{{ item.price.toFixed(2) }}</td>
+            <td style="padding: 0.5rem 0; text-align: right; font-weight: 700;">LKR @{{ (item.currentStock * item.costPrice).toFixed(2) }}</td>
+            <td style="padding: 0.5rem 0; text-align: right; font-weight: 700;">LKR @{{ (item.currentStock * item.price).toFixed(2) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="display: flex; justify-content: flex-end; gap: 2rem; margin-top: 1rem; border-top: 1.5px solid #000; padding-top: 1rem; font-size: 0.9rem; color: #000;">
+        <div>
+          <span>Locked Capital (Asset at Cost): <strong>LKR @{{ reportsData.totalLockedCapital.toFixed(2) }}</strong></span>
+        </div>
+        <div>
+          <span>Total Retail Value: <strong>LKR @{{ reportsData.totalPotentialValue.toFixed(2) }}</strong></span>
+        </div>
       </div>
     </div>
 
