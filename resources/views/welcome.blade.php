@@ -1172,9 +1172,6 @@
         </div>
       </div>
 
-      </div>
-
-      <!-- Panel 4: MLOps Model Health & Drift Monitor -->
       <div v-else-if="activeTab === 'mlops'" class="dashboard-grid-1x2">
         
         <!-- ML Telemetry Observables -->
@@ -2352,9 +2349,8 @@
         </form>
       </div>
     </div>
-
     <!-- Add Supplier Nested Modal Overlay -->
-    <div class="modal-overlay" v-if="showAddSupplierModal" style="z-index: 1000; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center;">
+    <div class="modal-overlay" v-if="showAddSupplierModal" style="z-index: 1000; backdrop-filter: blur(10px); background: rgba(10, 15, 30, 0.65); display: flex; align-items: center; justify-content: center;">
       <div class="receipt-modal" style="max-width: 420px; padding: 2rem; border: 1px solid rgba(255,255,255,0.06); text-align: left;">
         <div style="text-align:center;margin-bottom:1.5rem">
           <div style="font-size:1.35rem;font-weight:800;font-family:var(--font-display);color:var(--accent-purple);">Register New Supplier</div>
