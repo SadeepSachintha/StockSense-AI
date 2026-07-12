@@ -43,6 +43,19 @@
         >
       </div>
 
+      <div style="margin-bottom:1.25rem">
+        <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.4rem;text-transform:uppercase;font-weight:600">Operator Username</label>
+        <input 
+          type="text" 
+          name="username" 
+          class="admin-input" 
+          placeholder="e.g. cashier or owner" 
+          value="{{ old('username', 'owner') }}" 
+          style="width:100%;box-sizing:border-box" 
+          required 
+        >
+      </div>
+
       <div style="margin-bottom:1.75rem">
         <div style="display:flex;justify-content:between;align-items:center;margin-bottom:0.4rem">
           <label style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;font-weight:600">Operator Password</label>
@@ -65,7 +78,7 @@
 
     <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border-glass);text-align:center">
       <div style="font-size:0.72rem;color:var(--text-muted);line-height:1.4">
-        <strong>Demo Hint:</strong> Use Tenant ID <code style="color:var(--accent-purple)">tenant_001</code> or <code style="color:var(--accent-purple)">tenant_002</code> with password <code style="color:var(--accent-purple)">password</code>.
+        <strong>Demo Hint:</strong> Use Tenant ID <code style="color:var(--accent-purple)">tenant_001</code>, Username <code style="color:var(--accent-purple)">owner</code> (full access) or <code style="color:var(--accent-purple)">cashier</code> (POS only), and Password <code style="color:var(--accent-purple)">password</code>.
       </div>
       <div style="margin-top:1rem;font-size:0.7rem;color:var(--text-muted)">
         A product of <a href="https://ss-labz.pages.dev/" target="_blank" style="color:var(--accent-purple);text-decoration:none;font-weight:600">SS Labz</a>

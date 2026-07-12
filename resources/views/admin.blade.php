@@ -200,8 +200,95 @@
               </tbody>
             </table>
           </div>
-        </div>
+      </div>
+    </div>
 
+      <!-- Panel 2: Store Operator Accounts Provisioning -->
+      <div class="card" style="margin-top: 1.5rem;">
+        <h3 class="dashboard-card-title" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Store User Accounts Provisioning</span>
+          <div style="display:inline-flex; align-items:center; gap:0.5rem;">
+            <span style="font-size:0.8rem; color:var(--text-muted);">Active Store ID:</span>
+            <select v-model="selectedProvisionTenantId" @change="fetchTenantUsers" class="select-input" style="padding:0.25rem 0.5rem; font-size:0.75rem; width:auto; margin:0;">
+              <option v-for="t in tenantsList" :key="t.id" :value="t.id">@{{ t.id }} (@{{ t.name }})</option>
+            </select>
+          </div>
+        </h3>
+        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1.5rem">
+          Create or delete operator user profiles (Owners vs Cashiers) scoped inside the selected tenant context.
+        </p>
+
+        <div style="display:grid; grid-template-columns: 1fr 2fr; gap:1.5rem;">
+          
+          <!-- Left Panel: Create Account Form -->
+          <div style="background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.04); padding:1.25rem; border-radius:8px;">
+            <h4 style="margin:0 0 1rem; font-family:'Outfit'; color:var(--text-primary);">Create User Profile</h4>
+            <form @submit.prevent="createTenantUser">
+              <div style="margin-bottom:0.75rem">
+                <label style="font-size:0.7rem; color:var(--text-secondary); display:block; margin-bottom:0.25rem; text-transform:uppercase; font-weight:600">Username</label>
+                <input type="text" class="admin-input" v-model="newTenantUser.username" placeholder="e.g. john_doe" style="width:100%" required>
+              </div>
+              <div style="margin-bottom:0.75rem">
+                <label style="font-size:0.7rem; color:var(--text-secondary); display:block; margin-bottom:0.25rem; text-transform:uppercase; font-weight:600">Display Name</label>
+                <input type="text" class="admin-input" v-model="newTenantUser.name" placeholder="e.g. John Doe" style="width:100%" required>
+              </div>
+              <div style="margin-bottom:0.75rem">
+                <label style="font-size:0.7rem; color:var(--text-secondary); display:block; margin-bottom:0.25rem; text-transform:uppercase; font-weight:600">Security Password</label>
+                <input type="password" class="admin-input" v-model="newTenantUser.password" placeholder="••••••••" style="width:100%" required>
+              </div>
+              <div style="margin-bottom:1.25rem">
+                <label style="font-size:0.7rem; color:var(--text-secondary); display:block; margin-bottom:0.25rem; text-transform:uppercase; font-weight:600">Fulfillment Role</label>
+                <select class="select-input" style="width:100%" v-model="newTenantUser.role" required>
+                  <option value="cashier">Cashier (POS Checkout only)</option>
+                  <option value="owner">Business Owner (Full Access)</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-primary" style="width:100%; justify-content:center; background:var(--gradient-purple); border-color:var(--accent-purple)">
+                Provision Operator User
+              </button>
+            </form>
+          </div>
+
+          <!-- Right Panel: Accounts Grid -->
+          <div>
+            <div v-if="tenantUsersList.length === 0" style="text-align:center; padding:3.5rem 0; color:var(--text-muted); border:1px dashed rgba(255,255,255,0.06); border-radius:8px;">
+              No user profiles have been provisioned for this tenant store yet.
+            </div>
+            <div v-else class="data-table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Display Name</th>
+                    <th>Username</th>
+                    <th>System Role</th>
+                    <th>Date Provisioned</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="user in tenantUsersList" :key="user.id">
+                    <td><strong>@{{ user.name }}</strong></td>
+                    <td><code style="color:var(--accent-purple)">@{{ user.username }}</code></td>
+                    <td>
+                      <span v-if="user.role === 'owner'" class="badge success" style="font-size:0.65rem; padding:0.15rem 0.35rem;">Store Owner</span>
+                      <span v-else class="badge warning" style="font-size:0.65rem; padding:0.15rem 0.35rem;">Cashier</span>
+                    </td>
+                    <td>@{{ new Date(user.created_at).toLocaleDateString() }}</td>
+                    <td style="text-align:right">
+                      <button 
+                        class="btn-mini danger" 
+                        @click="deleteTenantUser(user.id)"
+                      >
+                        Revoke Access
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
       </div>
 
     </main>

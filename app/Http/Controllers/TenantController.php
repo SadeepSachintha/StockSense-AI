@@ -100,4 +100,69 @@ class TenantController extends Controller
             'message' => 'Tenant and associated records deleted.'
         ]);
     }
+
+    /**
+     * Get users for a specific tenant.
+     */
+    public function getUsers(string $tenantId): JsonResponse
+    {
+        $users = \App\Models\TenantUser::where('tenant_id', $tenantId)->get();
+        return response()->json([
+            'status' => 'success',
+            'data' => $users
+        ]);
+    }
+
+    /**
+     * Add a user to a specific tenant.
+     */
+    public function addUser(Request $request, string $tenantId): JsonResponse
+    {
+        $validated = $request->validate([
+            'username' => 'required|string|max:50',
+            'password' => 'required|string|min:4',
+            'role' => 'required|string|in:cashier,owner',
+            'name' => 'required|string|max:255',
+        ]);
+
+        // Check if username unique inside this tenant scope
+        $exists = \App\Models\TenantUser::where('tenant_id', $tenantId)
+            ->where('username', $validated['username'])
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "The username '{$validated['username']}' is already in use for this store."
+            ], 400);
+        }
+
+        $user = \App\Models\TenantUser::create([
+            'tenant_id' => $tenantId,
+            'username' => $validated['username'],
+            'password' => \Hash::make($validated['password']),
+            'role' => $validated['role'],
+            'name' => $validated['name'],
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Store operator account provisioned successfully.',
+            'data' => $user
+        ], 201);
+    }
+
+    /**
+     * Delete a tenant user account.
+     */
+    public function deleteUser(string $id): JsonResponse
+    {
+        $user = \App\Models\TenantUser::findOrFail($id);
+        $user->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Operator account deleted successfully.'
+        ]);
+    }
 }

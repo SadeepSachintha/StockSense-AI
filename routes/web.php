@@ -34,6 +34,9 @@ Route::get('/login', function () {
 
 Route::post('/login', function (Request $request) {
     $tenantId = $request->input('tenant_id');
+    $username = $request->input('username');
+    $password = $request->input('password');
+
     $tenant = Tenant::find($tenantId);
     
     if (!$tenant) {
@@ -43,13 +46,29 @@ Route::post('/login', function (Request $request) {
     if ($tenant->status === 'suspended') {
         return back()->withErrors(['tenant_id' => 'This SaaS tenant context has been suspended by administration.'])->withInput();
     }
+
+    // Authenticate operator user under this tenant scope
+    $user = \App\Models\TenantUser::where('tenant_id', $tenantId)
+        ->where('username', $username)
+        ->first();
+
+    if (!$user || !\Hash::check($password, $user->password)) {
+        return back()->withErrors(['password' => 'Invalid Operator Username or Password for this Tenant account.'])->withInput();
+    }
     
-    session(['tenant_id' => $tenantId]);
+    session([
+        'tenant_id' => $tenantId,
+        'user_id' => $user->id,
+        'username' => $user->username,
+        'user_name' => $user->name,
+        'user_role' => $user->role
+    ]);
+
     return redirect('/');
 });
 
 Route::get('/logout', function () {
-    session()->forget('tenant_id');
+    session()->forget(['tenant_id', 'user_id', 'username', 'user_name', 'user_role']);
     return redirect('/login');
 });
 

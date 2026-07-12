@@ -8,6 +8,12 @@
   <!-- Load Vue 3 and Chart.js from CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    window.userRole = "{{ session('user_role', 'owner') }}";
+    window.userName = "{{ session('user_name', 'System Operator') }}";
+    window.tenantName = "{{ session('tenant_id') && \Schema::hasTable('tenants') ? (\App\Models\Tenant::find(session('tenant_id'))?->name ?? 'Global Goods Retailers') : 'Global Goods Retailers' }}";
+    window.tenantId = "{{ session('tenant_id', 'tenant_001') }}";
+  </script>
 </head>
 <body>
   <div id="app" class="app-container" v-cloak>
@@ -26,7 +32,7 @@
 
       <nav>
         <ul class="nav-menu">
-          <li class="nav-item" :class="{ active: activeTab === 'overview' }">
+          <li v-if="userRole === 'owner'" class="nav-item" :class="{ active: activeTab === 'overview' }">
             <button @click="activeTab = 'overview'">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <rect x="3" y="3" width="7" height="9" rx="1"/>
@@ -37,7 +43,7 @@
               Overview
             </button>
           </li>
-          <li class="nav-item" :class="{ active: activeTab === 'forecast' }">
+          <li v-if="userRole === 'owner'" class="nav-item" :class="{ active: activeTab === 'forecast' }">
             <button @click="activeTab = 'forecast'">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3 3v18h18" stroke-linecap="round" stroke-linejoin="round"/>
@@ -46,7 +52,7 @@
               Demand Forecast
             </button>
           </li>
-          <li class="nav-item" :class="{ active: activeTab === 'restock' }">
+          <li v-if="userRole === 'owner'" class="nav-item" :class="{ active: activeTab === 'restock' }">
             <button @click="activeTab = 'restock'">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L2 7l10 5 10-5-10-5z" stroke-linecap="round" stroke-linejoin="round"/>
@@ -65,7 +71,7 @@
               POS Terminal
             </button>
           </li>
-          <li class="nav-item" :class="{ active: activeTab === 'mlops' }">
+          <li v-if="userRole === 'owner'" class="nav-item" :class="{ active: activeTab === 'mlops' }">
             <button @click="activeTab = 'mlops'">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke-linecap="round" stroke-linejoin="round"/>
@@ -73,7 +79,7 @@
               MLOps Health
             </button>
           </li>
-          <li class="nav-item" :class="{ active: activeTab === 'analytics' }">
+          <li v-if="userRole === 'owner'" class="nav-item" :class="{ active: activeTab === 'analytics' }">
             <button @click="activeTab = 'analytics'; fetchTransactionHistory();">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:currentColor;fill:none;stroke-width:2">
                 <line x1="18" y1="20" x2="18" y2="10" stroke-linecap="round" stroke-linejoin="round"/>
@@ -88,17 +94,18 @@
 
       <div class="sidebar-footer">
         <div class="tenant-selector-card">
-          <div class="tenant-avatar">GR</div>
-          <div class="tenant-info">
-            <div class="tenant-name">Global Goods</div>
-            <div class="tenant-role">ID: tenant_001</div>
+          <div class="tenant-avatar" style="background:var(--accent-purple); color:#ffffff; font-weight:800;">
+            @{{ tenantName.substring(0, 2).toUpperCase() }}
           </div>
-          <svg style="width:16px;height:16px;margin-left:auto;stroke:var(--text-muted);fill:none;stroke-width:2" viewBox="0 0 24 24">
-            <path d="M6 9l6 6 6-6"/>
-          </svg>
+          <div class="tenant-info">
+            <div class="tenant-name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:110px;">@{{ tenantName }}</div>
+            <div class="tenant-role" style="font-size:0.7rem; color:var(--text-muted);">
+              @{{ userName }} (@{{ userRole.toUpperCase() }})
+            </div>
+          </div>
         </div>
         <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
-          <a href="/saas-admin" class="btn-primary" style="flex:1;justify-content:center;font-size:0.7rem;gap:0.25rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);padding:0.45rem 0.2rem">
+          <a v-if="userRole === 'owner'" href="/saas-admin" class="btn-primary" style="flex:1;justify-content:center;font-size:0.7rem;gap:0.25rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);padding:0.45rem 0.2rem">
             <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="3"/>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>

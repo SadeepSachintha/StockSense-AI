@@ -46,8 +46,16 @@ const getCode39SVG = (value) => {
 
 window.vm = createApp({
   setup() {
+    // Operator Role & Session Details
+    const userRole = ref(window.userRole || 'owner');
+    const userName = ref(window.userName || 'System Operator');
+    const tenantName = ref(window.tenantName || 'Global Goods Retailers');
+
     // Nav & System status
-    const activeTab = ref(window.location.pathname.includes('/saas-admin') ? 'admin' : 'overview');
+    const initialTab = window.location.pathname.includes('/saas-admin') 
+      ? 'admin' 
+      : (window.userRole === 'cashier' ? 'pos' : 'overview');
+    const activeTab = ref(initialTab);
     const systemStatus = ref('ETL Pipeline: Success');
     const systemStatusClass = ref('emerald');
     const activeTenantId = ref(new URLSearchParams(window.location.search).get('tenant_id') || localStorage.getItem('active_tenant_id') || 'tenant_001');
@@ -1316,6 +1324,10 @@ window.vm = createApp({
         const data = await res.json();
         if (data.status === 'success') {
           tenantsList.value = data.data;
+          if (tenantsList.value.length > 0 && !selectedProvisionTenantId.value) {
+            selectedProvisionTenantId.value = tenantsList.value[0].id;
+          }
+          await fetchTenantUsers();
         }
       } catch (err) {
         console.error("Error fetching tenants:", err);
@@ -1353,6 +1365,87 @@ window.vm = createApp({
         }
       } catch (err) {
         console.error("Error creating tenant:", err);
+      }
+    };
+
+    const selectedProvisionTenantId = ref('tenant_001');
+    const tenantUsersList = ref([]);
+    const newTenantUser = ref({ username: '', name: '', password: '', role: 'cashier' });
+
+    const fetchTenantUsers = async () => {
+      if (!selectedProvisionTenantId.value) return;
+      try {
+        const res = await fetch(`/api/tenants/${selectedProvisionTenantId.value}/users`);
+        const data = await res.json();
+        if (data.status === 'success') {
+          tenantUsersList.value = data.data;
+        }
+      } catch (err) {
+        console.error("Error fetching tenant users:", err);
+      }
+    };
+
+    const createTenantUser = async () => {
+      if (!selectedProvisionTenantId.value) return;
+      const payload = newTenantUser.value;
+      if (!payload.username || !payload.name || !payload.password) {
+        alert("Please fill in all user profile details.");
+        return;
+      }
+      try {
+        const res = await fetch(`/api/tenants/${selectedProvisionTenantId.value}/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          toastAlert.value = {
+            show: true,
+            title: "Operator Provisioned",
+            msg: `Successfully created user ${payload.name} (${payload.role}) for ${selectedProvisionTenantId.value}.`,
+            channel: "SaaS Admin Console"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 4000);
+          newTenantUser.value = { username: '', name: '', password: '', role: 'cashier' };
+          await fetchTenantUsers();
+        } else {
+          alert("Failed to create user: " + data.message);
+        }
+      } catch (err) {
+        console.error("Error creating tenant user:", err);
+      }
+    };
+
+    const deleteTenantUser = async (userId) => {
+      if (!confirm("Are you sure you want to revoke access and delete this operator account?")) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/tenant-users/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          toastAlert.value = {
+            show: true,
+            title: "Access Revoked",
+            msg: data.message,
+            channel: "SaaS Admin Console"
+          };
+          setTimeout(() => { toastAlert.value.show = false; }, 4000);
+          await fetchTenantUsers();
+        } else {
+          alert("Failed to delete user: " + data.message);
+        }
+      } catch (err) {
+        console.error("Error deleting tenant user:", err);
       }
     };
 
@@ -2285,7 +2378,16 @@ Inventory Management Team`;
       calculatorOverrideStdDev,
       calculatedStdDev,
       finalSafetyStock,
-      applySafetyStock
+      applySafetyStock,
+      userRole,
+      userName,
+      tenantName,
+      selectedProvisionTenantId,
+      tenantUsersList,
+      newTenantUser,
+      fetchTenantUsers,
+      createTenantUser,
+      deleteTenantUser
     };
   }
 }).mount('#app');

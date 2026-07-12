@@ -30,6 +30,61 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Create tenant_002 as well
+        Tenant::firstOrCreate(
+            ['id' => 'tenant_002'],
+            [
+                'name' => 'Apex Retail Store',
+                'subscription_tier' => 'basic',
+                'status' => 'active'
+            ]
+        );
+
+        // Seed default owner & cashier users for demo tenants
+        $password = \Hash::make('password');
+
+        $demoUsers = [
+            [
+                'tenant_id' => 'tenant_001',
+                'username' => 'owner',
+                'password' => $password,
+                'role' => 'owner',
+                'name' => 'Sadeep (Owner)',
+            ],
+            [
+                'tenant_id' => 'tenant_001',
+                'username' => 'cashier',
+                'password' => $password,
+                'role' => 'cashier',
+                'name' => 'Janith (Cashier)',
+            ],
+            [
+                'tenant_id' => 'tenant_002',
+                'username' => 'owner',
+                'password' => $password,
+                'role' => 'owner',
+                'name' => 'Maneesha (Owner)',
+            ],
+            [
+                'tenant_id' => 'tenant_002',
+                'username' => 'cashier',
+                'password' => $password,
+                'role' => 'cashier',
+                'name' => 'Kavindi (Cashier)',
+            ]
+        ];
+
+        foreach ($demoUsers as $u) {
+            \App\Models\TenantUser::firstOrCreate(
+                ['tenant_id' => $u['tenant_id'], 'username' => $u['username']],
+                [
+                    'password' => $u['password'],
+                    'role' => $u['role'],
+                    'name' => $u['name'],
+                ]
+            );
+        }
+
         // Resolve TenantManager and bind current session context
         app(TenantManager::class)->setTenantId('tenant_001');
 

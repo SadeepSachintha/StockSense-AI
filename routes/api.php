@@ -33,6 +33,11 @@ Route::get('/tenants/{id}', [TenantController::class, 'show']);
 Route::put('/tenants/{id}', [TenantController::class, 'update']);
 Route::delete('/tenants/{id}', [TenantController::class, 'destroy']);
 
+// Tenant User Provisioning Routes
+Route::get('/tenants/{id}/users', [TenantController::class, 'getUsers']);
+Route::post('/tenants/{id}/users', [TenantController::class, 'addUser']);
+Route::delete('/tenant-users/{id}', [TenantController::class, 'deleteUser']);
+
 // Supplier Purchase Orders Routes
 Route::get('/purchase-orders', [\App\Http\Controllers\SupplierPOController::class, 'index']);
 Route::post('/purchase-orders', [\App\Http\Controllers\SupplierPOController::class, 'dispatch']);
