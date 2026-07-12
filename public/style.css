@@ -1615,6 +1615,8 @@ body {
   box-shadow: 0 10px 30px -5px rgba(139, 92, 246, 0.15), 0 8px 16px -6px rgba(0, 0, 0, 0.3);
 }
 .barcode-scanner-container {
+  position: relative;
+  z-index: 50;
   background: rgba(17, 24, 39, 0.6);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.06);
